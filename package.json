@@ -1,0 +1,17 @@
+{
+  "name": "cordova-plugin-custom",
+  "version": "1.0.0",
+  "description": "cordova custom plugin template",
+  "cordova": {
+    "id": "cordova-plugin-custom",
+    "platforms": [
+      "android"
+    ]
+  },
+  "keywords": [
+    "ecosystem:cordova",
+    "cordova-android"
+  ],
+  "author": "Ahmed Ayachi",
+  "license": "ISC"
+}
