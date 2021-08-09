@@ -5,3 +5,4 @@ exports={
         exec(alert,alert,"Custom","coolAlert",[message]);
     },
 };
+

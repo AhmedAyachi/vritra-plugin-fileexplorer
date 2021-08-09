@@ -1,4 +1,4 @@
-package org.apache.cordova.custom;
+package com.ahmedayachi.custom;
 
 import org.apache.cordova.CordovaPlugin;
 import org.apache.cordova.CallbackContext;
