@@ -1,21 +1,21 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <plugin 
-    id="cordova-plugin-custom" 
+    id="com.ahmedayachi.template" 
     version="1.0.0" 
     xmlns="http://apache.org/cordova/ns/plugins/1.0" 
     xmlns:android="http://schemas.android.com/apk/res/android"
 >
-    <name>cordova-plugin-custom</name>
-    <js-module name="Custom" src="www/Custom.js">
-        <clobbers target="window.Custom"/>
+    <name>template</name>
+    <js-module name="template" src="www/template.js">
+        <clobbers target="template"/>
     </js-module>
     <platform name="android">
         <config-file parent="/*" target="res/xml/config.xml">
-            <feature name="Custom">
-                <param name="android-package" value="com.ahmedayachi.custom" />
+            <feature name="template">
+                <param name="android-package" value="com.ahmedayachi.template.template" />
             </feature>
         </config-file>
         <config-file parent="/*" target="AndroidManifest.xml"></config-file>
-        <source-file src="src/android/Custom.java" target-dir="src/com/ahmedayachi/custom/Custom" />
+        <source-file src="src/android/template.java" target-dir="src/com/ahmedayachi/template/template" />
     </platform>
 </plugin>

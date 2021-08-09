@@ -1,9 +1,9 @@
 {
-  "name": "cordova-plugin-custom",
+  "name": "com.ahmedayachi.template",
   "version": "1.0.0",
   "description": "cordova custom plugin template",
   "cordova": {
-    "id": "cordova-plugin-custom",
+    "id": "com.ahmedayachi.template",
     "platforms": [
       "android"
     ]

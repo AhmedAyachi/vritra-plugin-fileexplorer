@@ -1,8 +1,8 @@
 const exec=require("cordova/exec");
 
-exports={
+
+module.exports={
     coolAlert:(message)=>{
         exec(alert,alert,"Custom","coolAlert",[message]);
     },
 };
-
