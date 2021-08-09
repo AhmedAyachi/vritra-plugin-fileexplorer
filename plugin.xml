@@ -5,17 +5,17 @@
     xmlns="http://apache.org/cordova/ns/plugins/1.0" 
     xmlns:android="http://schemas.android.com/apk/res/android"
 >
-    <name>template</name>
-    <js-module name="template" src="www/template.js">
-        <clobbers target="template"/>
+    <name>Template</name>
+    <js-module name="template" src="www/Template.js">
+        <clobbers target="Template"/>
     </js-module>
     <platform name="android">
         <config-file parent="/*" target="res/xml/config.xml">
             <feature name="template">
-                <param name="android-package" value="com.ahmedayachi.template.template" />
+                <param name="android-package" value="com.ahmedayachi.template.Template" />
             </feature>
         </config-file>
         <config-file parent="/*" target="AndroidManifest.xml"></config-file>
-        <source-file src="src/android/template.java" target-dir="src/com/ahmedayachi/template/template" />
+        <source-file src="src/android/Template.java" target-dir="src/com/ahmedayachi/template/template" />
     </platform>
 </plugin>
