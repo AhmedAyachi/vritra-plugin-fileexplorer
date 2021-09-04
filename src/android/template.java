@@ -9,7 +9,7 @@ import org.json.JSONException;
 public class Template extends CordovaPlugin {
 
     @Override
-    public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
+    public boolean execute(String action,JSONArray args,CallbackContext callbackContext) throws JSONException{
         if(action.equals("coolAlert")) {
             String message=args.getString(0);
             this.coolAlert(message,callbackContext);
