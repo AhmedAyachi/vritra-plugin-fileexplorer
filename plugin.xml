@@ -13,7 +13,7 @@
 
     <platform name="android">
         <config-file parent="/*" target="res/xml/config.xml">
-            <feature name="template">
+            <feature name="Template">
                 <param name="android-package" value="com.ahmedayachi.template.Template" />
             </feature>
         </config-file>
