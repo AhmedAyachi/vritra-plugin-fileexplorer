@@ -6,25 +6,21 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
 >
     <name>Template</name>
-
-    <js-module name="template" src="www/Template.js">
+    <js-module name="template" src="www/index.js">
         <clobbers target="Template"/>
     </js-module>
-
     <platform name="android">
-        <config-file parent="/*" target="res/xml/config.xml">
+        <config-file target="res/xml/config.xml" parent="/*">
             <feature name="Template">
                 <param name="android-package" value="com.ahmedayachi.template.Template" />
             </feature>
         </config-file>
-        <config-file parent="/*" target="AndroidManifest.xml"></config-file>
+        <config-file target="AndroidManifest.xml" parent="application"></config-file>
         <source-file src="src/android/Template.java" target-dir="src/com/ahmedayachi/template/Template" />
     </platform>
-
     <platform name="browser">
-        <js-module src="src/browser/TemplateProxy.js" name="TemplateProxy">
-            <runs/>
+        <js-module src="src/browser/Template.js" name="browserTemplate">
+            <clobbers target="Template"/>
         </js-module>
     </platform>
-    
 </plugin>
