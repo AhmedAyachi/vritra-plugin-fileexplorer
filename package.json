@@ -1,6 +1,8 @@
 {
   "name": "cordova-plugin-template",
   "version": "1.0.0",
+  "main": "www/index.js",
+  "types": "index.d.ts",
   "description": "cordova custom plugin template",
   "cordova": {
     "id": "cordova-plugin-template",
