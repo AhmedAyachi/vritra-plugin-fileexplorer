@@ -1,4 +1,4 @@
-declare var Template:Template;
+declare const Template:Template;
 
 
 interface Template{
