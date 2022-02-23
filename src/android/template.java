@@ -3,6 +3,8 @@ package com.ahmedayachi.template;
 import org.apache.cordova.*;
 import org.json.JSONArray;
 import org.json.JSONException;
+import android.content.Context;
+import android.content.res.Resources;
 
 
 public class Template extends CordovaPlugin{
