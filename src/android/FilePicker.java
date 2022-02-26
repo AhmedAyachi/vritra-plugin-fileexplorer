@@ -11,6 +11,7 @@ import android.content.res.Resources;
 import java.util.Random;
 import android.net.Uri;
 import java.io.File;
+import android.widget.Toast;
 
 
 public class FilePicker extends CordovaPlugin{
@@ -38,7 +39,8 @@ public class FilePicker extends CordovaPlugin{
     }
 
     private void show(JSONObject props,CallbackContext callback){
-        final Intent intent=new Intent(Intent.ACTION_GET_CONTENT);
+        final Intent intent=new Intent(Intent.ACTION_OPEN_DOCUMENT);
+        //intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
         intent.setType(props.optString("type","*/*"));
         final Boolean multiple=props.optBoolean("multiple",true);
         this.multiple=multiple;
@@ -88,7 +90,8 @@ public class FilePicker extends CordovaPlugin{
         }
     }
 
-    JSONObject getFileProps(Uri uri) throws Exception{
+    static JSONObject getFileProps(Uri uri) throws Exception{
+        //Toast.makeText(context,uri.toString(),Toast.LENGTH_SHORT).show();
         final JSONObject props=new JSONObject();
         final File file=new File(uri.getPath());
         props.put("path",file.getPath());
@@ -100,6 +103,13 @@ public class FilePicker extends CordovaPlugin{
         props.put("size",file.getTotalSpace());
         return props;
     }
+
+    static String parsePath(String path){
+        String result="";
+        String[] parts=path.split(":");
+        result="file://"+parts[parts.length-1];
+        return result;
+    };
 
     static protected int getResourceId(String type,String name){
         return resources.getIdentifier(name,type,FilePicker.packagename);
