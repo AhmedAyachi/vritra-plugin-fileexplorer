@@ -10,12 +10,12 @@ interface FilePicker{
 }
 
 interface Entry{
-    path:String,
     name:String,
-    type:String,
+    path:String,
+    extension:String,
+    location:String,
     absolutePath:String,
     canonicalPath:String,
-    location:String,
     lastModified:Number,
     size:Number,
 }
