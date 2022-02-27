@@ -12,7 +12,6 @@ interface FilePicker{
 interface Entry{
     name:String,
     path:String,
-    extension:String,
     location:String,
     absolutePath:String,
     canonicalPath:String,
