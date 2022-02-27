@@ -61,7 +61,6 @@ public class FilePicker extends CordovaPlugin{
         }
     }
 
-    @Override
     public void onRequestPermissionsResult(int ref,String[] permissions,int[] results) throws JSONException{
         if(results[0]==PackageManager.PERMISSION_GRANTED){
             final Intent intent=new Intent(Intent.ACTION_GET_CONTENT);
@@ -77,7 +76,12 @@ public class FilePicker extends CordovaPlugin{
             callbacks.remove(Integer.toString(ref));
             Toast.makeText(context,"FilePicker Permission Denied",Toast.LENGTH_SHORT).show();
         }
+    }
+
+    public void onRequestPermissionResult(int ref,String[] permissions,int[] results) throws JSONException{
+        this.onRequestPermissionsResult(ref,permissions,results);
     };
+    
     @Override
     public void onActivityResult(int ref,int resultCode,Intent intent){
         final String key=Integer.toString(ref);
