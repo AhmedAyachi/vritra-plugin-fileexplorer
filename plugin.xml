@@ -20,6 +20,7 @@
         </edit-config> -->
         <config-file target="AndroidManifest.xml" parent="application"></config-file>
         <source-file src="src/android/FilePicker.java" target-dir="src/com/ahmedayachi/filepicker/FilePicker"/>
+        <source-file src="src/android/FileHelper.java" target-dir="src/com/ahmedayachi/filepicker/FilePicker"/>
     </platform>
     <platform name="browser">
         <js-module src="src/browser/FilePicker.js" name="browserFilePicker">

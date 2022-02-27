@@ -5,17 +5,17 @@ interface FilePicker{
     show(props:{
         multiple:Boolean,
         type:String,
-        onPick(entry:Entry):void,
-        onPick(entries:Entry[]):void,
+        onPick(entry:Entry|Entry[]):void,
     }):void,
 }
 
 interface Entry{
     path:String,
+    name:String,
+    type:String,
     absolutePath:String,
     canonicalPath:String,
     location:String,
-    name:String,
     lastModified:Number,
     size:Number,
 }
