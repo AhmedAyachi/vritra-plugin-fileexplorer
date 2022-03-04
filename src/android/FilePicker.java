@@ -11,6 +11,8 @@ import android.content.res.Resources;
 import java.util.Random;
 import android.net.Uri;
 import java.io.File;
+import java.io.IOException;
+import java.net.URLConnection;
 import android.Manifest.permission;
 import android.content.pm.PackageManager;
 import android.content.ContentResolver;
@@ -18,7 +20,10 @@ import android.database.Cursor;
 import android.provider.OpenableColumns;
 import android.os.Environment;
 import android.widget.Toast;
-import javafx.scene.web.WebView;
+import android.app.Activity;
+import androidx.core.content.FileProvider;
+import android.media.MediaPlayer;
+import android.media.AudioManager;
 
 
 public class FilePicker extends CordovaPlugin{
@@ -27,6 +32,7 @@ public class FilePicker extends CordovaPlugin{
     static protected Resources resources;
     static protected String packagename;
     static protected CordovaInterface cordova;
+    protected static final JSONObject mediaplayers=new JSONObject();
     protected static final JSONObject callbacks=new JSONObject();
     final int ref=new Random().nextInt(999);
     JSONObject props=null; 
@@ -41,9 +47,29 @@ public class FilePicker extends CordovaPlugin{
     }
     @Override
     public boolean execute(String action,JSONArray args,CallbackContext callbackContext) throws JSONException{
-        if(action.equals("show")) {
+        if(action.equals("show")){
             JSONObject props=args.getJSONObject(0);
             this.show(props,callbackContext);
+            return true;
+        }
+        else if(action.equals("useFileType")){
+            String path=args.getString(0);
+            this.useFileType(path,callbackContext);
+            return true;
+        }
+        else if(action.equals("open")){
+            JSONObject props=args.getJSONObject(0);
+            this.open(props,callbackContext);
+            return true;
+        } 
+        else if(action.equals("playAudio")){
+            JSONObject props=args.getJSONObject(0);
+            this.playAudio(props,callbackContext);
+            return true;
+        }
+        else if(action.equals("stopAudio")){
+            JSONObject props=args.getJSONObject(0);
+            this.stopAudio(props,callbackContext);
             return true;
         }
         return false;
@@ -126,6 +152,92 @@ public class FilePicker extends CordovaPlugin{
         }
     }
 
+    private void useFileType(String path,CallbackContext callback){
+        final String type=URLConnection.guessContentTypeFromName(path);
+        callback.success(type);
+    }
+
+    private void open(JSONObject props,CallbackContext callback){
+        final String path=props.optString("path",null);
+        try{
+            if(path!=null){
+                final Intent intent=new Intent(Intent.ACTION_VIEW);
+                final File file=new File(parsePath(path));
+                final Uri uri=FileProvider.getUriForFile(context,packagename+".provider",file);
+                intent.setData(uri);
+                final Activity activity=cordova.getActivity();
+                if(intent.resolveActivity(activity.getPackageManager())==null){
+                    Toast.makeText(context,"No app to open file",Toast.LENGTH_SHORT).show();
+                }
+                else{
+                    intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION|Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+                    activity.startActivity(intent);
+                }
+            }
+            else{
+                throw new Exception("Path property is falsy");
+            }
+        }
+        catch(Exception exception){
+            callback.error(exception.getMessage());
+        }
+    }
+
+    private void playAudio(JSONObject props,CallbackContext callback){
+        try{
+            final String id=props.optString("id",null);
+            if(id!=null){
+                final String path=props.optString("path",null);
+                if(path!=null){
+                    final MediaPlayer mediaplayer=new MediaPlayer();
+                    mediaplayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+                    mediaplayer.setDataSource(path);
+                    mediaplayer.prepare();
+                    final int duration=mediaplayer.getDuration();
+                    final double atRatio=props.optDouble("atRatio",0);
+                    if((atRatio>0)&&(atRatio<1)){
+                        mediaplayer.seekTo((long)(atRatio*duration),MediaPlayer.SEEK_CLOSEST);
+                    }
+                    mediaplayer.start();
+                    mediaplayers.put(id,mediaplayer);
+                    final JSONObject params=new JSONObject();
+                    params.put("duration",duration);
+                    callback.success(params);
+                }
+                else{
+                    throw new Exception("Path property is required");
+                }
+            }
+            else{
+                throw new Exception("Id property is required");
+            }
+        }
+        catch(Exception exception){
+            callback.error(exception.getMessage());
+        }
+    }
+
+    private void stopAudio(JSONObject props,CallbackContext callback){
+        try{
+            final String id=props.optString("id",null);
+            if(id!=null){
+                final MediaPlayer mediaplayer=(MediaPlayer)mediaplayers.opt(id);
+                final JSONObject params=new JSONObject();
+                params.put("timestamp",mediaplayer.getTimestamp().getAnchorMediaTimeUs()/1000);
+                mediaplayer.stop();
+                mediaplayer.release();
+                mediaplayers.remove(id);
+                callback.success(params);
+            }
+            else{
+                throw new Exception("Id property is required");
+            }
+        }
+        catch(Exception exception){
+            callback.error(exception.getMessage());
+        }
+    }
+
     static protected JSONObject getFileProps(Uri uri) throws Exception{
         JSONObject props=new JSONObject();
         try{
@@ -161,6 +273,7 @@ public class FilePicker extends CordovaPlugin{
         return props;
     }
 
+
     static void setFileProps(File file,JSONObject props) throws Exception{
         final String name=file.getName();
         props.put("name",name);
@@ -170,8 +283,27 @@ public class FilePicker extends CordovaPlugin{
         props.put("canonicalPath",file.getCanonicalPath());
         props.put("lastModified",file.lastModified());
     }
+
+    /* static Boolean isMediaFile(String path){
+        Boolean isMedia=false;
+        final String type=URLConnection.guessContentTypeFromName(path);
+        final String[] mediaTypes={"image","audio","video"};
+        int i=0,length=mediaTypes.length;
+        while((!isMedia)&&(i<length)){
+            isMedia=type.startsWith(mediaTypes[i]);
+            i++;
+        }
+        return isMedia;
+    } */
+
+    static String parsePath(String path){
+        if(path.startsWith("file://")){
+            path=path.replace("file://","");
+        }
+        return path;
+    }
+
     static protected int getResourceId(String type,String name){
         return resources.getIdentifier(name,type,FilePicker.packagename);
     }
-    
 }

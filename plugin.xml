@@ -18,9 +18,22 @@
         <!-- <edit-config file="app/src/main/AndroidManifest.xml" target="/manifest/application" mode="merge">
             <application android:requestLegacyExternalStorage="true"/>
         </edit-config> -->
-        <config-file target="AndroidManifest.xml" parent="application"></config-file>
+        <config-file target="AndroidManifest.xml" parent="application">
+            <provider
+                android:name="androidx.core.content.FileProvider"
+                android:authorities="${applicationId}.provider"
+                android:exported="false"
+                android:grantUriPermissions="true"
+            >
+                <meta-data
+                    android:name="android.support.FILE_PROVIDER_PATHS"
+                    android:resource="@xml/filepicker_provider_paths"
+                />
+           </provider>
+        </config-file>
         <source-file src="src/android/FilePicker.java" target-dir="src/com/ahmedayachi/filepicker/FilePicker"/>
         <source-file src="src/android/FileHelper.java" target-dir="src/com/ahmedayachi/filepicker/FilePicker"/>
+        <source-file src="src/android/filepicker_provider_paths.xml" target-dir="res/xml"/>
     </platform>
     <platform name="browser">
         <js-module src="src/browser/FilePicker.js" name="browserFilePicker">
