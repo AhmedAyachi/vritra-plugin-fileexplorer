@@ -222,12 +222,14 @@ public class FilePicker extends CordovaPlugin{
             final String id=props.optString("id",null);
             if(id!=null){
                 final MediaPlayer mediaplayer=(MediaPlayer)mediaplayers.opt(id);
-                final JSONObject params=new JSONObject();
-                params.put("timestamp",mediaplayer.getTimestamp().getAnchorMediaTimeUs()/1000);
-                mediaplayer.stop();
-                mediaplayer.release();
-                mediaplayers.remove(id);
-                callback.success(params);
+                if(mediaplayer!=null){
+                    final JSONObject params=new JSONObject();
+                    params.put("timestamp",mediaplayer.getTimestamp().getAnchorMediaTimeUs()/1000);
+                    mediaplayer.stop();
+                    mediaplayer.release();
+                    mediaplayers.remove(id);
+                    callback.success(params);
+                }
             }
             else{
                 throw new Exception("Id property is required");
