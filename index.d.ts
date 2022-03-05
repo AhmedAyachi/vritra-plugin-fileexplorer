@@ -10,7 +10,7 @@ interface FilePicker{
     useFileType(path:String,callback:(type:String)=>void):void;
     open(props:{
         path:String,
-        onFail(message:String):void,
+        onFail(error:String):void,
     }):void;
     playAudio(params:{
         id:String|Number,
