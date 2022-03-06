@@ -14,7 +14,7 @@ module.exports={
     useFileType:(path,callback)=>{
         let type=null;
         if((typeof(path)==="string")&&path.length){
-            const extension=path.substring(path.lastIndexOf("."));
+            const extension=path.substring(path.lastIndexOf(".")+1);
             const prop=extensions.find(({values})=>values.includes(extension.toLowerCase()));
             type=prop?prop.type:"*";
             if(type){
