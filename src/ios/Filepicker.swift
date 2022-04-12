@@ -59,4 +59,19 @@ class Filepicker:FilePickerPlugin,UIDocumentPickerDelegate {
     func documentPickerWasCancelled(_ pickerVC:UIDocumentPickerViewController){
         
     }
+
+    @objc(useFileType:)
+    func useFileType(command:CDVInvokedUrlCommand){
+        let argument=command.arguments[0] as? String;
+        if !(argument==nil){
+            let path:NSString=argument as! NSString;
+            if #available(iOS 14,*){
+                let mimeType=UTType(filenameExtension:path.pathExtension)?.preferredMIMEType ?? "";
+                success(command,mimeType);
+            }
+            else{
+                success(command,path.mimeType());
+            }
+        }
+    }
 }

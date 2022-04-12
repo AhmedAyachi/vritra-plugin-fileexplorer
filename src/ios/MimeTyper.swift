@@ -1,38 +1,20 @@
+import Foundation
 
 
-module.exports={
-    show:(props)=>{
-        const filepicker=document.createElement("input"),{multiple=true}=props;
-        filepicker.type="file";
-        filepicker.multiple=multiple;
-        filepicker.onchange=()=>{
-            const {onPick}=props,{files}=filepicker;
-            onPick&&onPick(multiple?[...files]:files[0]);
-        }
-        filepicker.click();
-    },
-    useFileType:(path,callback)=>{
-        let type=null;
-        if((typeof(path)==="string")&&path.length){
-            const extension=path.substring(path.lastIndexOf(".")+1);
-            type=extensions[extension];
-        }
-        callback&&callback(type);
-    },
-    open:(props)=>{
-        const {file}=props;
-        window.open(file,"_blank","fullscreen=true");
-    },
-    playAudio:(props)=>{
-        //const {onPlay,onFail}=props;
-        console.log("browser not supported");
-    },
-    stopAudio:(props)=>{
-        console.log("browser not supported");
-    },
+internal func MimeType(ext:String?)->String{
+    return mimeTypes[ext?.lowercased() ?? "" ] ?? "";
 }
-
-const extensions={
+extension NSString {
+    public func mimeType()->String{
+        return MimeType(ext:self.pathExtension);
+    }
+}
+extension String {
+    public func mimeType()->String{
+        return (self as NSString).mimeType();
+    }
+}
+internal let mimeTypes=[
     "html":"text/html",
     "htm":"text/html",
     "shtml":"text/html",
@@ -132,5 +114,16 @@ const extensions={
     "asf":"video/x-ms-asf",
     "wmv":"video/x-ms-wmv",
     "avi":"video/x-msvideo",
-};
+]
 
+/* extension NSURL {
+    public func mimeType() -> String {
+        return MimeType(ext: self.pathExtension)
+    }
+}
+
+extension URL {
+    public func mimeType() -> String {
+        return MimeType(ext: self.pathExtension)
+    }
+} */
