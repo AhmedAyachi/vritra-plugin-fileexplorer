@@ -9,6 +9,7 @@
     <js-module name="filepicker" src="www/index.js">
         <clobbers target="FilePicker"/>
     </js-module>
+    
     <platform name="android">
         <config-file target="res/xml/config.xml" parent="/*">
             <feature name="FilePicker">
@@ -35,9 +36,21 @@
         <source-file src="src/android/FileHelper.java" target-dir="src/com/ahmedayachi/filepicker/FilePicker"/>
         <source-file src="src/android/filepicker_provider_paths.xml" target-dir="res/xml"/>
     </platform>
+    
+    <platform name="ios">
+        <config-file parent="/*" target="config.xml">
+            <feature name="FilePicker">
+                <param name="ios-package" value="Filepicker" onload="false"/>
+            </feature>
+        </config-file>
+        <source-file src="src/ios/FilePickerPlugin.swift"/>
+        <source-file src="src/ios/Filepicker.swift"/>
+    </platform>
+
     <platform name="browser">
         <js-module src="src/browser/FilePicker.js" name="browserFilePicker">
             <clobbers target="FilePicker"/>
         </js-module>
     </platform>
+
 </plugin>
