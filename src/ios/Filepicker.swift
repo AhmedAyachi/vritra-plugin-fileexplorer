@@ -13,22 +13,23 @@ class Filepicker:FilePickerPlugin,UIDocumentPickerDelegate {
         if !(argument==nil){
             let props=argument!;
             self.showCommand=command;
+            var pickerVC:UIDocumentPickerViewController;
+            let type=props["type"] as? String ?? "*/*";
             if #available(iOS 14,*){
-                let type=props["type"] as? String ?? "*";
                 let types=UTType.types(
                     tag:type,
                     tagClass:UTTagClass.mimeType,
                     conformingTo:nil
                 );
-                let pickerVC=UIDocumentPickerViewController(forOpeningContentTypes:types,asCopy:false);
-                self.multiple=props["multiple"] as? Bool ?? true;
-                pickerVC.allowsMultipleSelection=multiple;
-                pickerVC.delegate=self;
-                self.viewController.present(pickerVC,animated:true);
+                pickerVC=UIDocumentPickerViewController(forOpeningContentTypes:types,asCopy:false);
             }
             else {
-                print("not supported");
+                pickerVC=UIDocumentPickerViewController(documentTypes:"".split(separator:",").map({String($0)}),in:UIDocumentPickerMode.open);
             }
+            self.multiple=props["multiple"] as? Bool ?? true;
+            pickerVC.allowsMultipleSelection=multiple;
+            pickerVC.delegate=self;
+            self.viewController.present(pickerVC,animated:true);
         }
     }
 
