@@ -1,11 +1,13 @@
 import Foundation;
 import UniformTypeIdentifiers;
+import AVFAudio;
 
 
 class Filepicker:FilePickerPlugin,UIDocumentPickerDelegate,UIDocumentInteractionControllerDelegate {
 
     var multiple=true;
     var showCommand:CDVInvokedUrlCommand?=nil;
+    static var audioplayers:[String:AVAudioPlayer]=[:];
 
     @objc(show:)
     func show(command:CDVInvokedUrlCommand){
@@ -15,7 +17,7 @@ class Filepicker:FilePickerPlugin,UIDocumentPickerDelegate,UIDocumentInteraction
             self.showCommand=command;
             var pickerVC:UIDocumentPickerViewController;
             let type:String=props["type"] as? String ?? "*/*";
-            if #available(iOS 14,*){
+            if#available(iOS 14,*){
                 pickerVC=UIDocumentPickerViewController(forOpeningContentTypes:Filepicker.getUTTypes(type),asCopy:false);
             }
             else {
@@ -61,7 +63,7 @@ class Filepicker:FilePickerPlugin,UIDocumentPickerDelegate,UIDocumentInteraction
         let argument=command.arguments[0] as? String;
         if !(argument==nil){
             let path:NSString=argument as! NSString;
-            if #available(iOS 14,*){
+            if#available(iOS 14,*){
                 let mimeType=UTType(filenameExtension:path.pathExtension)?.preferredMIMEType ?? "";
                 success(command,mimeType);
             }
@@ -75,11 +77,106 @@ class Filepicker:FilePickerPlugin,UIDocumentPickerDelegate,UIDocumentInteraction
     func open(command:CDVInvokedUrlCommand){
         let argument=command.arguments[0] as? String;
         if !(argument==nil){
-            let url=URL(string:argument!);
+            let path:String=argument!;
+            let url:URL?=path.contains("://") ? URL(string:path):URL(fileURLWithPath:path);
             if !(url==nil){
-                let controller=UIDocumentInteractionController(url:url!);
-                controller.delegate=self;
-                controller.presentPreview(animated:true);
+                let file=url!;
+                let app=UIApplication.shared;
+                if(app.canOpenURL(file)){
+                    if#available(iOS 10.0,*){
+                        app.open(file);
+                    }
+                    else{
+                        app.openURL(file);
+                    }
+                    /* let controller=UIDocumentInteractionController(url:file);
+                    controller.delegate=self;
+                    controller.presentOpenInMenu(
+                        from:self.viewController.view.frame,
+                        in:self.viewController.view,
+                        animated:true
+                    ); */
+                    /* let controller=UIDocumentInteractionController(url:url);
+                    controller.delegate=self;
+                    controller.presentPreview(animated:true); */
+                }
+                else{
+                    let alert=UIAlertController(title:"",message:"No app to open file",preferredStyle:.actionSheet);
+                    DispatchQueue.main.asyncAfter(deadline:DispatchTime.now()+2){
+                        alert.dismiss(animated:true);
+                    }
+                    error(command,"Can't open url");
+                }
+            }
+        }
+    }
+
+    func documentInteractionControllerViewControllerForPreview(_ controller:UIDocumentInteractionController)->UIViewController{
+        return self.viewController;
+    }
+
+    @objc(playAudio:)
+    func playAudio(command:CDVInvokedUrlCommand){
+        let argument=command.arguments[0] as? [AnyHashable:Any];
+        do{
+            if !(argument==nil){
+                let props=argument!;
+                let id=props["id"] as? String ?? "";
+                if !(id.isEmpty){
+                    let path=props["path"] as? String ?? "";
+                    if(!path.isEmpty){
+                        let url:URL?=path.contains("://") ? URL(string:path):URL(fileURLWithPath:path);
+                        if !(url==nil){
+                            let file=url!;
+                            let player:AVAudioPlayer=try!AVAudioPlayer(contentsOf:file);
+                            let duration:TimeInterval=player.duration;
+                            let atRatio=props["atRatio"] as? Double ?? 0;
+                            player.currentTime=atRatio*duration;
+                            if(player.play()){
+                                Filepicker.audioplayers[id]=player;
+                                let params:[String:Any]=[
+                                    "duration":duration*1000,
+                                ];
+                                success(command,params);
+                            }
+                            else{
+                                throw "Unable to play audio";
+                            }
+                        }
+                    }
+                    else{
+                        throw "Path property is required";
+                    }
+                }
+                else{
+                    throw "Id property is required";
+                }
+            }
+        }
+        catch{
+            self.error(command,error.localizedDescription);
+        }
+    }
+
+    @objc(stopAudio:)
+    func stopAudio(command:CDVInvokedUrlCommand){
+        let argument=command.arguments[0] as? [AnyHashable:Any];
+        if !(argument==nil){
+            let props=argument!;
+            let id=props["id"] as? String ?? "";
+            if(!id.isEmpty){
+                let value:AVAudioPlayer?=Filepicker.audioplayers[id];
+                if !(value==nil){
+                    let player=value!;
+                    player.stop();
+                    if(!player.isPlaying){
+                        let params:[String:Any]=[
+                            "timestamp":player.currentTime*1000,
+                        ];
+                        Filepicker.audioplayers.removeValue(forKey:id);
+                        success(command,params);
+                    }
+                }
             }
         }
     }

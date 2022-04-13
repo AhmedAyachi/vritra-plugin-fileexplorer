@@ -45,6 +45,7 @@
         </config-file>
         <source-file src="src/ios/FilePickerPlugin.swift"/>
         <source-file src="src/ios/MimeTyper.swift"/>
+        <source-file src="src/ios/ErrorHandler.swift"/>
         <source-file src="src/ios/Filepicker.swift"/>
     </platform>
 

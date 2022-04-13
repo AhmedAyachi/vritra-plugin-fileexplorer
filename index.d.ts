@@ -13,7 +13,7 @@ interface FilePicker{
         onFail(message:String):void,
     }):void;
     playAudio(params:{
-        id:String|Number,
+        id:String,
         path:String,
         atRatio:Number,
         onPlay(params:{
@@ -22,7 +22,7 @@ interface FilePicker{
         onFail(message:String):void,
     }):void,
     stopAudio(params:{
-        id:String|Number,
+        id:String,
         onStop(params:{
             timestamp:Number, 
         }):void,
