@@ -14,7 +14,8 @@ extension String {
         return (self as NSString).mimeType();
     }
 }
-internal let mimeTypes=[
+
+let mimeTypes=[
     "html":"text/html",
     "htm":"text/html",
     "shtml":"text/html",

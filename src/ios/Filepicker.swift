@@ -2,7 +2,7 @@ import Foundation;
 import UniformTypeIdentifiers;
 
 
-class Filepicker:FilePickerPlugin,UIDocumentPickerDelegate {
+class Filepicker:FilePickerPlugin,UIDocumentPickerDelegate,UIDocumentInteractionControllerDelegate {
 
     var multiple=true;
     var showCommand:CDVInvokedUrlCommand?=nil;
@@ -14,17 +14,13 @@ class Filepicker:FilePickerPlugin,UIDocumentPickerDelegate {
             let props=argument!;
             self.showCommand=command;
             var pickerVC:UIDocumentPickerViewController;
-            let type=props["type"] as? String ?? "*/*";
+            let type:String=props["type"] as? String ?? "*/*";
             if #available(iOS 14,*){
-                let types=UTType.types(
-                    tag:type,
-                    tagClass:UTTagClass.mimeType,
-                    conformingTo:nil
-                );
-                pickerVC=UIDocumentPickerViewController(forOpeningContentTypes:types,asCopy:false);
+                pickerVC=UIDocumentPickerViewController(forOpeningContentTypes:Filepicker.getUTTypes(type),asCopy:false);
             }
             else {
-                pickerVC=UIDocumentPickerViewController(documentTypes:"".split(separator:",").map({String($0)}),in:UIDocumentPickerMode.open);
+                
+                pickerVC=UIDocumentPickerViewController(documentTypes:Filepicker.getMimeTypes(type),in:UIDocumentPickerMode.open);
             }
             self.multiple=props["multiple"] as? Bool ?? true;
             pickerVC.allowsMultipleSelection=multiple;
@@ -73,5 +69,63 @@ class Filepicker:FilePickerPlugin,UIDocumentPickerDelegate {
                 success(command,path.mimeType());
             }
         }
+    }
+
+    @objc(open:)
+    func open(command:CDVInvokedUrlCommand){
+        let argument=command.arguments[0] as? String;
+        if !(argument==nil){
+            let url=URL(string:argument!);
+            if !(url==nil){
+                let controller=UIDocumentInteractionController(url:url!);
+                controller.delegate=self;
+                controller.presentPreview(animated:true);
+            }
+        }
+    }
+
+    @available(iOS 14.0,*)
+    static func getUTTypes(_ type:String)->[UTType]{
+        var types:[UTType]=[];
+        if(type=="*/*"){
+            Set(mimeTypes.values).forEach(pushMimeType);
+        }
+        else{
+            type.split(separator:",").forEach({pushMimeType(String($0))});
+        }
+        func pushMimeType(_ token:String){
+            let mime=token.trimmingCharacters(in:[" "]);
+            if(mime.hasSuffix("/*")||(!mime.contains("/"))){
+                let base=mime.contains("/") ? mime.replacingOccurrences(of:"/*",with:""):mime;
+                Set(mimeTypes.values).filter({value in value.hasPrefix(base)}).forEach(pushMimeType);
+            }
+            else{
+                let uttype=UTType(mimeType:mime);
+                if !(uttype==nil){
+                    types.append(uttype!);
+                }
+            }
+        }
+        return types;
+    }
+
+    static func getMimeTypes(_ token:String)->[String]{
+        var types:[String]=[];
+        if(token=="*/*"){
+            types=mimeTypes.values.map({value in String(value)});
+        }
+        else{
+            token.split(separator:",").forEach({item in
+                let mime=String(item).trimmingCharacters(in:[" "]);
+                if(mime.hasSuffix("/*")||(!mime.contains("/"))){
+                    let base=mime.contains("/") ? mime.replacingOccurrences(of:"/*",with:""):mime;
+                    Set(mimeTypes.values).filter({value in value.hasPrefix(base)}).forEach({types.append($0)});
+                }
+                else{
+                    types.append(mime);
+                }
+            });
+        }
+        return types;
     }
 }
