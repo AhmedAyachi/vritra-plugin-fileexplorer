@@ -140,16 +140,16 @@ class Filepicker:FilePickerPlugin,UIDocumentPickerDelegate,UIDocumentInteraction
                                 success(command,params);
                             }
                             else{
-                                throw "Unable to play audio";
+                                throw Filepicker.Error("Unable to play audio");
                             }
                         }
                     }
                     else{
-                        throw "Path property is required";
+                        throw Filepicker.Error("Path property is required");
                     }
                 }
                 else{
-                    throw "Id property is required";
+                    throw Filepicker.Error("Id property is required");
                 }
             }
         }
