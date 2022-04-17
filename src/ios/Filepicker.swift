@@ -11,23 +11,22 @@ class Filepicker:FilePickerPlugin,UIDocumentPickerDelegate,UIDocumentInteraction
 
     @objc(show:)
     func show(command:CDVInvokedUrlCommand){
-        let argument=command.arguments[0] as? [AnyHashable:Any];
-        if !(argument==nil){
-            let props=argument!;
-            self.showCommand=command;
-            var pickerVC:UIDocumentPickerViewController;
-            let type:String=props["type"] as? String ?? "*/*";
-            if#available(iOS 14,*){
-                pickerVC=UIDocumentPickerViewController(forOpeningContentTypes:Filepicker.getUTTypes(type),asCopy:false);
-            }
-            else {
-                
-                pickerVC=UIDocumentPickerViewController(documentTypes:Filepicker.getMimeTypes(type),in:UIDocumentPickerMode.open);
-            }
-            self.multiple=props["multiple"] as? Bool ?? true;
-            pickerVC.allowsMultipleSelection=multiple;
-            pickerVC.delegate=self;
-            self.viewController.present(pickerVC,animated:true);
+        if let props=command.arguments[0] as? [AnyHashable:Any] {
+            DispatchQueue.main.async(execute:{[self] in
+                self.showCommand=command;
+                var pickerVC:UIDocumentPickerViewController;
+                let type:String=props["type"] as? String ?? "*/*";
+                if#available(iOS 14,*){
+                    pickerVC=UIDocumentPickerViewController(forOpeningContentTypes:Filepicker.getUTTypes(type),asCopy:false);
+                }
+                else {
+                    pickerVC=UIDocumentPickerViewController(documentTypes:Filepicker.getMimeTypes(type),in:UIDocumentPickerMode.open);
+                }
+                self.multiple=props["multiple"] as? Bool ?? true;
+                pickerVC.allowsMultipleSelection=multiple;
+                pickerVC.delegate=self;
+                self.viewController.present(pickerVC,animated:true);
+            });
         }
     }
 
@@ -51,18 +50,16 @@ class Filepicker:FilePickerPlugin,UIDocumentPickerDelegate,UIDocumentInteraction
             }
             entries.append(entry);
         });
-        multiple ? success(showCommand!,entries):success(showCommand!,entries[0]);
+        multiple ? success(showCommand!,entries):success(showCommand!,entries[0] as [AnyHashable:Any]);
     }
         
     func documentPickerWasCancelled(_ pickerVC:UIDocumentPickerViewController){
-        
+ 
     }
 
     @objc(useFileType:)
     func useFileType(command:CDVInvokedUrlCommand){
-        let argument=command.arguments[0] as? String;
-        if !(argument==nil){
-            let path:NSString=argument as! NSString;
+        if let path=command.arguments[0] as? NSString {
             if#available(iOS 14,*){
                 let mimeType=UTType(filenameExtension:path.pathExtension)?.preferredMIMEType ?? "";
                 success(command,mimeType);
@@ -75,30 +72,18 @@ class Filepicker:FilePickerPlugin,UIDocumentPickerDelegate,UIDocumentInteraction
 
     @objc(open:)
     func open(command:CDVInvokedUrlCommand){
-        let argument=command.arguments[0] as? String;
-        if !(argument==nil){
-            let path:String=argument!;
-            let url:URL?=path.contains("://") ? URL(string:path):URL(fileURLWithPath:path);
-            if !(url==nil){
-                let file=url!;
+        DispatchQueue.main.async(execute:{[self] in
+            if let props=command.arguments[0] as? [AnyHashable:Any],
+                let path=props["path"] as? String,
+                let url=path.contains("://") ? URL(string:path):URL(fileURLWithPath:path){
                 let app=UIApplication.shared;
-                if(app.canOpenURL(file)){
+                if(app.canOpenURL(url)){
                     if#available(iOS 10.0,*){
-                        app.open(file);
+                        app.open(url);
                     }
                     else{
-                        app.openURL(file);
+                        app.openURL(url);
                     }
-                    /* let controller=UIDocumentInteractionController(url:file);
-                    controller.delegate=self;
-                    controller.presentOpenInMenu(
-                        from:self.viewController.view.frame,
-                        in:self.viewController.view,
-                        animated:true
-                    ); */
-                    /* let controller=UIDocumentInteractionController(url:url);
-                    controller.delegate=self;
-                    controller.presentPreview(animated:true); */
                 }
                 else{
                     let alert=UIAlertController(title:"",message:"No app to open file",preferredStyle:.actionSheet);
@@ -108,7 +93,7 @@ class Filepicker:FilePickerPlugin,UIDocumentPickerDelegate,UIDocumentInteraction
                     error(command,"Can't open url");
                 }
             }
-        }
+        });
     }
 
     func documentInteractionControllerViewControllerForPreview(_ controller:UIDocumentInteractionController)->UIViewController{
@@ -117,18 +102,14 @@ class Filepicker:FilePickerPlugin,UIDocumentPickerDelegate,UIDocumentInteraction
 
     @objc(playAudio:)
     func playAudio(command:CDVInvokedUrlCommand){
-        let argument=command.arguments[0] as? [AnyHashable:Any];
-        do{
-            if !(argument==nil){
-                let props=argument!;
-                let id=props["id"] as? String ?? "";
-                if !(id.isEmpty){
-                    let path=props["path"] as? String ?? "";
-                    if(!path.isEmpty){
-                        let url:URL?=path.contains("://") ? URL(string:path):URL(fileURLWithPath:path);
-                        if !(url==nil){
-                            let file=url!;
-                            let player:AVAudioPlayer=try!AVAudioPlayer(contentsOf:file);
+        DispatchQueue.main.async(execute:{[self] in
+            do{
+                if let props=command.arguments[0] as? [AnyHashable:Any] {
+                    let id=props["id"] as? String ?? "";
+                    if !(id.isEmpty){
+                        let path=props["path"] as? String ?? "";
+                        if(!path.isEmpty),let url=path.contains("://") ? URL(string:path):URL(fileURLWithPath:path){
+                            let player:AVAudioPlayer=try AVAudioPlayer(contentsOf:url);
                             let duration:TimeInterval=player.duration;
                             let atRatio=props["atRatio"] as? Double ?? 0;
                             player.currentTime=atRatio*duration;
@@ -143,31 +124,27 @@ class Filepicker:FilePickerPlugin,UIDocumentPickerDelegate,UIDocumentInteraction
                                 throw Filepicker.Error("Unable to play audio");
                             }
                         }
+                        else{
+                            throw Filepicker.Error("Path property is required");
+                        }
                     }
                     else{
-                        throw Filepicker.Error("Path property is required");
+                        throw Filepicker.Error("Id property is required");
                     }
                 }
-                else{
-                    throw Filepicker.Error("Id property is required");
-                }
             }
-        }
-        catch{
-            self.error(command,error.localizedDescription);
-        }
+            catch{
+                self.error(command,error.localizedDescription);
+            }
+        });
     }
 
     @objc(stopAudio:)
     func stopAudio(command:CDVInvokedUrlCommand){
-        let argument=command.arguments[0] as? [AnyHashable:Any];
-        if !(argument==nil){
-            let props=argument!;
-            let id=props["id"] as? String ?? "";
-            if(!id.isEmpty){
-                let value:AVAudioPlayer?=Filepicker.audioplayers[id];
-                if !(value==nil){
-                    let player=value!;
+        DispatchQueue.main.async(execute:{[self] in
+            if let props=command.arguments[0] as? [AnyHashable:Any] {
+                let id=props["id"] as? String ?? "";
+                if(!id.isEmpty),let player=Filepicker.audioplayers[id]{
                     player.stop();
                     if(!player.isPlaying){
                         let params:[String:Any]=[
@@ -178,7 +155,7 @@ class Filepicker:FilePickerPlugin,UIDocumentPickerDelegate,UIDocumentInteraction
                     }
                 }
             }
-        }
+        });
     }
 
     @available(iOS 14.0,*)
@@ -226,3 +203,15 @@ class Filepicker:FilePickerPlugin,UIDocumentPickerDelegate,UIDocumentInteraction
         return types;
     }
 }
+
+//show apps that can open such file
+/* let controller=UIDocumentInteractionController(url:file);
+controller.delegate=self;
+controller.presentOpenInMenu(
+    from:self.viewController.view.frame,
+    in:self.viewController.view,
+    animated:true
+); */
+/* let controller=UIDocumentInteractionController(url:url);
+controller.delegate=self;
+controller.presentPreview(animated:true); */
