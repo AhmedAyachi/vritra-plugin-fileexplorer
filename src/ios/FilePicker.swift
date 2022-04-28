@@ -19,8 +19,9 @@ class Filepicker:FilePickerPlugin,UIDocumentPickerDelegate,UIDocumentInteraction
                 self.showCommand=command;
                 self.props=props;
                 self.multiple=props["multiple"] as? Bool ?? true;
-                self.presentMediaPicker();
-                //self.presentDocumentsPicker();
+                let type=props["type"] as? String ?? "*/*";
+                let isMediaMode=Filepicker.isMediaMode(type);
+                isMediaMode ? self.presentMediaPicker():self.presentDocumentsPicker();
             });
         }
     }
@@ -123,7 +124,12 @@ class Filepicker:FilePickerPlugin,UIDocumentPickerDelegate,UIDocumentInteraction
         else{
             success(showCommand!,entries[0] as [AnyHashable:Any]);
         }
+        self.reset();
+    }
+
+    private func reset(){
         self.entries=[];
+        self.multiple=true;
     }
 
     @objc(useFileType:)
@@ -226,6 +232,15 @@ class Filepicker:FilePickerPlugin,UIDocumentPickerDelegate,UIDocumentInteraction
             }
         });
     }
+    
+    static func isMediaMode(_ token:String)->Bool{
+        var isMediaMode=false;
+        if(token != "*/*"){
+            let types=Filepicker.getMimeTypes(token);
+            isMediaMode=types.allSatisfy({type in type.hasPrefix("image")||type.hasPrefix("video")});
+        }
+        return isMediaMode;
+    }
 
     static func getEntryFromURL(_ url:URL)->[String:Any?]{
         let path=url.path;
@@ -290,6 +305,17 @@ class Filepicker:FilePickerPlugin,UIDocumentPickerDelegate,UIDocumentInteraction
         }
         return types;
     }
+
+    /* static func getMediaTypes(_ token:String)->[String]{
+        var types=Filepicker.getMediaTypes(token);
+        let length=types.count;
+        for i in 0..<length {
+            var type=types[i];
+            type="public.\(type.split(separator:"/")[0])";
+            types[i]=type;
+        }
+        return types;
+    } */
 }
 
 //show apps that can open such file

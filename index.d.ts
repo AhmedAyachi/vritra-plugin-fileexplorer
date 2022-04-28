@@ -7,8 +7,11 @@ interface FilePicker{
     */
     show(props:{
         /**
-        * if true, the user will be able to pick multiple files at once
-        * default: true
+        * if true, the user will be able to pick multiple files at once.
+        * default: true.
+        * @IOS
+        * For ios<14, if multiple is true, the user needs to cancel the picker manually
+        * after selecting files.
         */
         multiple:Boolean,
         /**
@@ -20,9 +23,13 @@ interface FilePicker{
         * "image" => "image/*" | "audio,video" => "audio/*,video/*"
         * By default the filpicker allows all types of files
         * @IOS
-        * Can't pick images and documents at the same time.
-        * to pick images just pass "image" as type.
-        * By default the filepicker will pick documents
+        * Can't pick images/videos and documents at the same time.
+        * to pick images/videos all mimetypes should be image/video type,
+        * otherwise a document picker is shown.
+        * Type extensions are ignored, values are actually: "image"|"video"|"image,video".
+        * All three values will have the same effect
+        * because specifying media extensions is not yet supported. 
+        * By default the filepicker will pick documents.
         */
         type:String,
         onPick(entry:FilePickerEntry|FilePickerEntry[]):void,
