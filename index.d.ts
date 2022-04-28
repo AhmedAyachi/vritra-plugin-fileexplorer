@@ -25,7 +25,7 @@ interface FilePicker{
         * By default the filepicker will pick documents
         */
         type:String,
-        onPick(entry:PickerEntry|PickerEntry[]):void,
+        onPick(entry:FilePickerEntry|FilePickerEntry[]):void,
     }):void;
     /**
     * Gets the mimeType of the path's target file.
@@ -77,7 +77,7 @@ interface FilePicker{
     }):void,
 }
 
-interface PickerEntry{
+interface FilePickerEntry{
     /**
     * File name with extension 
     */

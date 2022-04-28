@@ -1,10 +1,13 @@
 import Foundation;
 import UniformTypeIdentifiers;
 import AVFAudio;
+import PhotosUI;
 
 
-class Filepicker:FilePickerPlugin,UIDocumentPickerDelegate,UIDocumentInteractionControllerDelegate {
+class Filepicker:FilePickerPlugin,UIDocumentPickerDelegate,UIDocumentInteractionControllerDelegate,UINavigationControllerDelegate,UIImagePickerControllerDelegate,PHPickerViewControllerDelegate {
 
+    var props:[AnyHashable:Any]=[:];
+    lazy var entries:[[String:Any?]]=[];
     var multiple=true;
     var showCommand:CDVInvokedUrlCommand?=nil;
     static var audioplayers:[String:AVAudioPlayer]=[:];
@@ -14,47 +17,113 @@ class Filepicker:FilePickerPlugin,UIDocumentPickerDelegate,UIDocumentInteraction
         if let props=command.arguments[0] as? [AnyHashable:Any] {
             DispatchQueue.main.async(execute:{[self] in
                 self.showCommand=command;
-                var pickerVC:UIDocumentPickerViewController;
-                let type:String=props["type"] as? String ?? "*/*";
-                if#available(iOS 14,*){
-                    pickerVC=UIDocumentPickerViewController(forOpeningContentTypes:Filepicker.getUTTypes(type),asCopy:false);
-                }
-                else {
-                    pickerVC=UIDocumentPickerViewController(documentTypes:Filepicker.getMimeTypes(type),in:UIDocumentPickerMode.open);
-                }
+                self.props=props;
                 self.multiple=props["multiple"] as? Bool ?? true;
-                pickerVC.allowsMultipleSelection=multiple;
-                pickerVC.delegate=self;
-                self.viewController.present(pickerVC,animated:true);
+                self.presentMediaPicker();
+                //self.presentDocumentsPicker();
             });
         }
     }
+    
+    func presentDocumentsPicker(){
+        var pickerVC:UIDocumentPickerViewController;
+        let type:String=props["type"] as? String ?? "*/*";
+        if#available(iOS 14,*){
+            pickerVC=UIDocumentPickerViewController(forOpeningContentTypes:Filepicker.getUTTypes(type),asCopy:false);
+        }
+        else {
+            pickerVC=UIDocumentPickerViewController(documentTypes:Filepicker.getMimeTypes(type),in:UIDocumentPickerMode.open);
+        }
+        pickerVC.allowsMultipleSelection=multiple;
+        pickerVC.delegate=self;
+        self.viewController.present(pickerVC,animated:true);
+    } 
 
     func documentPicker(_ pickerVC:UIDocumentPickerViewController,didPickDocumentsAt:[URL]){
-        var entries:[[String:Any?]]=[];
         didPickDocumentsAt.forEach({url in
-        let path=url.path;
-        var entry:[String:Any?]=[
-                "name":url.lastPathComponent,
-                "path":path,
-                "location":path.replacingCharacters(in:(path.lastIndex(of:"/") ?? path.startIndex)...path.index(before:path.endIndex),with:""),
-                "absolutePath":"file://\(url.absoluteURL.path)",
-                "canonicalPath":url.absoluteURL.path,
-                "lastModified":0,
-                "size":0,
-            ];
-            let resource=try? url.resourceValues(forKeys:[.fileSizeKey,.contentModificationDateKey]);
-            if !(resource==nil){
-                entry["lastModified"]=(resource!.contentModificationDate?.timeIntervalSince1970 ?? 0)*1000;
-                entry["size"]=resource!.fileSize;
-            }
-            entries.append(entry);
+            entries.append(Filepicker.getEntryFromURL(url));
         });
-        multiple ? success(showCommand!,entries):success(showCommand!,entries[0] as [AnyHashable:Any]);
+        self.onPick();
     }
         
     func documentPickerWasCancelled(_ pickerVC:UIDocumentPickerViewController){
  
+    }
+
+    func presentMediaPicker(){
+        if#available(iOS 14,*){
+            /* PHPhotoLibrary.requestAuthorization(for:.readWrite,handler:{[self] permission in
+                if(permission==PHAuthorizationStatus.authorized||permission==PHAuthorizationStatus.limited){
+                    
+                }
+            }); */
+            var configs=PHPickerConfiguration(photoLibrary:PHPhotoLibrary.shared());
+            configs.selectionLimit=multiple ? 0:1;
+            let pickerVC=PHPickerViewController(configuration:configs);
+            pickerVC.delegate=self;
+            self.viewController.present(pickerVC,animated:true);
+        }
+        else{
+            let pickerVC=UIImagePickerController();
+            pickerVC.allowsEditing=false;
+            pickerVC.mediaTypes=["public.image","public.movie"];
+            pickerVC.sourceType=UIImagePickerController.SourceType.photoLibrary;
+            pickerVC.delegate=self;
+            self.viewController.present(pickerVC,animated:true);
+        }
+    }
+
+    @available(iOS 14, *)
+    func picker(_ pickerVC:PHPickerViewController,didFinishPicking medias:[PHPickerResult]){
+        if(!medias.isEmpty){
+            var i=0;
+            let manager=FileManager.default;
+            medias.forEach({media in
+                let provider=media.itemProvider;
+                provider.loadFileRepresentation(forTypeIdentifier:UTType.item.identifier,completionHandler:{[self] url,error in
+                    i+=1;
+                    if let url=url {
+                        let path="\(manager.temporaryDirectory.path)/\(url.lastPathComponent)";
+                        let destination=URL(fileURLWithPath:path);
+                        if((manager.fileExists(atPath:destination.path)&&((try? manager.replaceItemAt(destination,withItemAt:url) != nil) != nil))||((try? manager.moveItem(at:url,to:destination)) != nil)){
+                            let entry=Filepicker.getEntryFromURL(destination);
+                            self.entries.append(entry); 
+                        }
+                        if(i==medias.count){
+                            self.onPick();
+                        }
+                    }
+                });
+            });
+        }
+        pickerVC.dismiss(animated:true);
+    }
+
+    func imagePickerController(_ pickerVC:UIImagePickerController,didFinishPickingMediaWithInfo mediainfo:[UIImagePickerController.InfoKey:Any]){
+        if let value=mediainfo[.imageURL] ?? mediainfo[.mediaURL],let url=value as? URL {
+            let entry=Filepicker.getEntryFromURL(url);
+            entries.append(entry);
+        };
+        if(!multiple){
+            self.imagePickerControllerDidCancel(pickerVC);
+        }
+    }
+
+    func imagePickerControllerDidCancel(_ pickerVC: UIImagePickerController){
+        pickerVC.dismiss(animated:true);
+        if(!entries.isEmpty){
+            self.onPick();
+        }
+    }
+
+    func onPick(){
+        if(multiple){
+            success(showCommand!,entries);
+        }
+        else{
+            success(showCommand!,entries[0] as [AnyHashable:Any]);
+        }
+        self.entries=[];
     }
 
     @objc(useFileType:)
@@ -158,11 +227,30 @@ class Filepicker:FilePickerPlugin,UIDocumentPickerDelegate,UIDocumentInteraction
         });
     }
 
+    static func getEntryFromURL(_ url:URL)->[String:Any?]{
+        let path=url.path;
+        var entry:[String:Any?]=[
+            "name":url.lastPathComponent,
+            "path":path,
+            "location":path.replacingCharacters(in:(path.lastIndex(of:"/") ?? path.startIndex)...path.index(before:path.endIndex),with:""),
+            "absolutePath":"file://\(url.absoluteURL.path)",
+            "canonicalPath":url.absoluteURL.path,
+            "lastModified":0,
+            "size":0,
+        ];
+        if let resource=try? url.resourceValues(forKeys:[.fileSizeKey,.contentModificationDateKey]){
+            entry["lastModified"]=(resource.contentModificationDate?.timeIntervalSince1970 ?? 0)*1000;
+            entry["size"]=resource.fileSize;
+        }
+        return entry;
+    }
+
     @available(iOS 14.0,*)
     static func getUTTypes(_ type:String)->[UTType]{
         var types:[UTType]=[];
         if(type=="*/*"){
-            Set(mimeTypes.values).forEach(pushMimeType);
+            //Set(mimeTypes.values).forEach(pushMimeType);
+            types.append(UTType.item);
         }
         else{
             type.split(separator:",").forEach({pushMimeType(String($0))});
