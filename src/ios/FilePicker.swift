@@ -42,7 +42,12 @@ class Filepicker:FilePickerPlugin,UIDocumentPickerDelegate,UIDocumentInteraction
 
     func documentPicker(_ pickerVC:UIDocumentPickerViewController,didPickDocumentsAt:[URL]){
         didPickDocumentsAt.forEach({url in
-            entries.append(Filepicker.getEntryFromURL(url));
+            if(url.startAccessingSecurityScopedResource()){
+                entries.append(Filepicker.getEntryFromURL(url));
+                DispatchQueue.main.asyncAfter(deadline:.now()+30,execute:{
+                    url.stopAccessingSecurityScopedResource();
+                });
+            };
         });
         self.onPick();
     }
