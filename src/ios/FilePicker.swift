@@ -2,15 +2,17 @@ import Foundation;
 import UniformTypeIdentifiers;
 import AVFAudio;
 import PhotosUI;
+import QuickLook;
 
 
-class Filepicker:FilePickerPlugin,UIDocumentPickerDelegate,UIDocumentInteractionControllerDelegate,UINavigationControllerDelegate,UIImagePickerControllerDelegate,PHPickerViewControllerDelegate {
+class Filepicker:FilePickerPlugin,UIDocumentPickerDelegate,UIDocumentInteractionControllerDelegate,UINavigationControllerDelegate,UIImagePickerControllerDelegate,PHPickerViewControllerDelegate{
 
     var props:[AnyHashable:Any]=[:];
     lazy var entries:[[String:Any?]]=[];
     var multiple=true;
     var showCommand:CDVInvokedUrlCommand?=nil;
     static var audioplayers:[String:AVAudioPlayer]=[:];
+    var previewurl:URL?=nil;
 
     @objc(show:)
     func show(command:CDVInvokedUrlCommand){
@@ -41,13 +43,17 @@ class Filepicker:FilePickerPlugin,UIDocumentPickerDelegate,UIDocumentInteraction
     } 
 
     func documentPicker(_ pickerVC:UIDocumentPickerViewController,didPickDocumentsAt:[URL]){
-        didPickDocumentsAt.forEach({url in
-            if(url.startAccessingSecurityScopedResource()){
+        let included=didPickDocumentsAt.filter({url in
+            let accessable=url.startAccessingSecurityScopedResource();
+            if(accessable){
                 entries.append(Filepicker.getEntryFromURL(url));
-                DispatchQueue.main.asyncAfter(deadline:.now()+30,execute:{
-                    url.stopAccessingSecurityScopedResource();
-                });
             };
+            return accessable;
+        });
+        DispatchQueue.main.asyncAfter(deadline:.now()+30,execute:{
+            included.forEach({url in
+                url.stopAccessingSecurityScopedResource();
+            });
         });
         self.onPick();
     }
@@ -154,23 +160,30 @@ class Filepicker:FilePickerPlugin,UIDocumentPickerDelegate,UIDocumentInteraction
     func open(command:CDVInvokedUrlCommand){
         DispatchQueue.main.async(execute:{[self] in
             if let props=command.arguments[0] as? [AnyHashable:Any],
-                let path=props["path"] as? String,
-                let url=path.contains("://") ? URL(string:path):URL(fileURLWithPath:path){
-                let app=UIApplication.shared;
-                if(app.canOpenURL(url)){
-                    if#available(iOS 10.0,*){
-                        app.open(url);
-                    }
-                    else{
-                        app.openURL(url);
-                    }
+                var path=props["path"] as? String {
+                if(path.hasPrefix("file:")){
+                    path=path.replacingOccurrences(of:"file:",with:"");
                 }
-                else{
-                    let alert=UIAlertController(title:"",message:"No app to open file",preferredStyle:.actionSheet);
-                    DispatchQueue.main.asyncAfter(deadline:DispatchTime.now()+2){
-                        alert.dismiss(animated:true);
+                while(path.contains("//")){
+                    path=path.replacingOccurrences(of:"//",with:"/");
+                }
+                print("path:",path);
+                if let url=path.hasPrefix("http") ? URL(string:path):URL(fileURLWithPath:path),
+                    url.startAccessingSecurityScopedResource(){
+                    self.previewurl=url;
+                    print("url:",url.absoluteString);
+                    let opener=UIDocumentInteractionController(url:url);
+                    opener.delegate=self;
+                    if(!opener.presentPreview(animated:true)){
+                        url.stopAccessingSecurityScopedResource();
+                        self.previewurl=nil;
+                        let alert=UIAlertController(title:"",message:"No app to open file",preferredStyle:.actionSheet);
+                        DispatchQueue.main.asyncAfter(deadline:DispatchTime.now()+2){
+                            alert.dismiss(animated:true);
+                        }
+                        self.viewController.present(alert,animated:true);
+                        error(command,"Can't open url");
                     }
-                    error(command,"Can't open url");
                 }
             }
         });
@@ -178,6 +191,12 @@ class Filepicker:FilePickerPlugin,UIDocumentPickerDelegate,UIDocumentInteraction
 
     func documentInteractionControllerViewControllerForPreview(_ controller:UIDocumentInteractionController)->UIViewController{
         return self.viewController;
+    }
+
+    func documentInteractionControllerDidEndPreview(_ controller:UIDocumentInteractionController){
+        if let url=self.previewurl {
+            url.stopAccessingSecurityScopedResource();
+        }
     }
 
     @objc(playAudio:)
@@ -322,15 +341,3 @@ class Filepicker:FilePickerPlugin,UIDocumentPickerDelegate,UIDocumentInteraction
         return types;
     } */
 }
-
-//show apps that can open such file
-/* let controller=UIDocumentInteractionController(url:file);
-controller.delegate=self;
-controller.presentOpenInMenu(
-    from:self.viewController.view.frame,
-    in:self.viewController.view,
-    animated:true
-); */
-/* let controller=UIDocumentInteractionController(url:url);
-controller.delegate=self;
-controller.presentPreview(animated:true); */
