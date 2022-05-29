@@ -171,7 +171,8 @@ class Filepicker:FilePickerPlugin,UIDocumentPickerDelegate,UIDocumentInteraction
                 }
                 let url=URL(fileURLWithPath:path);
                 do{
-                    if(FileManager.default.fileExists(atPath:url.path)&&url.startAccessingSecurityScopedResource()){
+                    if(FileManager.default.fileExists(atPath:url.path)){
+                        _=url.startAccessingSecurityScopedResource()
                         self.previewurl=url;
                         let opener=UIDocumentInteractionController(url:url);
                         opener.delegate=self;
@@ -186,6 +187,7 @@ class Filepicker:FilePickerPlugin,UIDocumentPickerDelegate,UIDocumentInteraction
                     }
                 }
                 catch{
+                    print("does not exists");
                     let alert=UIAlertController(title:"",message:error.localizedDescription,preferredStyle:.actionSheet);
                     DispatchQueue.main.asyncAfter(deadline:DispatchTime.now()+2){
                         alert.dismiss(animated:true);
