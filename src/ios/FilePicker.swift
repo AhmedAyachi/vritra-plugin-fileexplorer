@@ -52,7 +52,9 @@ class Filepicker:FilePickerPlugin,UIDocumentPickerDelegate,UIDocumentInteraction
         });
         DispatchQueue.main.asyncAfter(deadline:.now()+30,execute:{
             included.forEach({url in
-                url.stopAccessingSecurityScopedResource();
+                if(url.startAccessingSecurityScopedResource()){
+                    url.stopAccessingSecurityScopedResource();
+                }
             });
         });
         self.onPick();
@@ -167,23 +169,29 @@ class Filepicker:FilePickerPlugin,UIDocumentPickerDelegate,UIDocumentInteraction
                 while(path.contains("//")){
                     path=path.replacingOccurrences(of:"//",with:"/");
                 }
-                print("path:",path);
-                if let url=path.hasPrefix("http") ? URL(string:path):URL(fileURLWithPath:path),
-                    url.startAccessingSecurityScopedResource(){
-                    self.previewurl=url;
-                    print("url:",url.absoluteString);
-                    let opener=UIDocumentInteractionController(url:url);
-                    opener.delegate=self;
-                    if(!opener.presentPreview(animated:true)){
-                        url.stopAccessingSecurityScopedResource();
-                        self.previewurl=nil;
-                        let alert=UIAlertController(title:"",message:"No app to open file",preferredStyle:.actionSheet);
-                        DispatchQueue.main.asyncAfter(deadline:DispatchTime.now()+2){
-                            alert.dismiss(animated:true);
+                let url=URL(fileURLWithPath:path);
+                do{
+                    if(FileManager.default.fileExists(atPath:url.path)&&url.startAccessingSecurityScopedResource()){
+                        self.previewurl=url;
+                        let opener=UIDocumentInteractionController(url:url);
+                        opener.delegate=self;
+                        if(!opener.presentPreview(animated:true)){
+                            url.stopAccessingSecurityScopedResource();
+                            self.previewurl=nil;
+                            throw Filepicker.Error("Can't open \(url.lastPathComponent)");
                         }
-                        self.viewController.present(alert,animated:true);
-                        error(command,"Can't open url");
                     }
+                    else{
+                        throw Filepicker.Error("Can't open \(url.lastPathComponent)");
+                    }
+                }
+                catch{
+                    let alert=UIAlertController(title:"",message:error.localizedDescription,preferredStyle:.actionSheet);
+                    DispatchQueue.main.asyncAfter(deadline:DispatchTime.now()+2){
+                        alert.dismiss(animated:true);
+                    }
+                    self.viewController.present(alert,animated:true);
+                    self.error(command,"Can't open url");
                 }
             }
         });
