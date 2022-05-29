@@ -187,7 +187,6 @@ class Filepicker:FilePickerPlugin,UIDocumentPickerDelegate,UIDocumentInteraction
                     }
                 }
                 catch{
-                    print("does not exists");
                     let alert=UIAlertController(title:"",message:error.localizedDescription,preferredStyle:.actionSheet);
                     DispatchQueue.main.asyncAfter(deadline:DispatchTime.now()+2){
                         alert.dismiss(animated:true);
