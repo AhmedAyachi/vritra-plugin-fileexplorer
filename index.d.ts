@@ -98,10 +98,9 @@ interface FilePickerEntry{
     */
     location:String,
     /**
-    * File's absolute path with file:/// as a prefix
+    * File's path property with file:/// as a prefix
     */
-    absolutePath:String,
-    canonicalPath:String,
+    fullpath:String,
     lastModified:Number,
     /**
     * File size in bytes 

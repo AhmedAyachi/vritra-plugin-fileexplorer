@@ -281,8 +281,7 @@ public class FilePicker extends CordovaPlugin{
         props.put("name",name);
         props.put("path",file.getPath());
         props.put("location",file.getParent());
-        props.put("absolutePath","file://"+file.getAbsolutePath());
-        props.put("canonicalPath",file.getCanonicalPath());
+        props.put("fullpath","file://"+file.getAbsolutePath());
         props.put("lastModified",file.lastModified());
     }
 

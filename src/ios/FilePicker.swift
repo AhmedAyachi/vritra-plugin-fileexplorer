@@ -281,8 +281,7 @@ class Filepicker:FilePickerPlugin,UIDocumentPickerDelegate,UIDocumentInteraction
             "name":url.lastPathComponent,
             "path":path,
             "location":path.replacingCharacters(in:(path.lastIndex(of:"/") ?? path.startIndex)...path.index(before:path.endIndex),with:""),
-            "absolutePath":"file://\(url.absoluteURL.path)",
-            "canonicalPath":url.absoluteURL.path,
+            "fullpath":"file://\(url.absoluteURL.path)",
             "lastModified":0,
             "size":0,
         ];
