@@ -20,8 +20,8 @@ module.exports={
         callback&&callback(type);
     },
     open:(props)=>{
-        const {file}=props;
-        window.open(file,"_blank","fullscreen=true");
+        const {path}=props;
+        window.open(path,"_blank","fullscreen=true");
     },
     playAudio:(props)=>{
         //const {onPlay,onFail}=props;
