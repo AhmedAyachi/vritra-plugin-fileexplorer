@@ -21,7 +21,7 @@ module.exports={
     },
     open:(props)=>{
         const {path}=props;
-        window.open(path,"_blank","fullscreen=true");
+        window.open(path,"_blank","popup=true,fullscreen=true");
     },
     playAudio:(props)=>{
         //const {onPlay,onFail}=props;
