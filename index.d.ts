@@ -5,7 +5,7 @@ interface FilePicker{
     /**
     * Shows the filepicker
     */
-    show(props:{
+    show(options:{
         /**
         * if true, the user will be able to pick multiple files at once.
         * default: true.
@@ -16,7 +16,7 @@ interface FilePicker{
         multiple:Boolean,
         /**
         * The mimeType of pickable files.
-        * You can specify multiple mimeTypes by separating them by a comma (,).
+        * Use comma-seperated mimeTypes for multiple file types.
         * @note
         * For mimeTypes lacking the character "/", the string "/*" will be used as a suffix
         * @example 
@@ -32,6 +32,10 @@ interface FilePicker{
         * By default the filepicker will pick documents.
         */
         type:String,
+        /**
+         * 
+         * @param entry if multiple is true, entry is an array else an object
+         */
         onPick(entry:FilePickerEntry|FilePickerEntry[]):void,
     }):void;
     /**
@@ -44,28 +48,27 @@ interface FilePicker{
     useFileType(path:String,callback:(type:String)=>void):void;
     /**
     * Opens the path's target file in the system default app.
-    * @note
-    * This method may fail on simulators
+    * @see This method may fail on simulators
     */
-    open(props:{
+    open(options:{
         path:String,
         onFail(message:String):void,
     }):void;
     /**
     * Plays the specified audio file path on background.
-    * Even if the webview is closed, The audio will keep playing 
+    * @see Even if the webview is closed, The audio will keep playing 
     */
-    playAudio(params:{
+    playAudio(options:{
         /**
         * AudioPlayer id, used to stop audio. 
         */
         id:String,
         path:String,
         /**
-        * A value in 0...1 used to play the audio file at a certain position. 
+        * A value in 0..1 used to play the audio file at a certain position. 
         */
         atRatio:Number,
-        onPlay(params:{
+        onPlay(options:{
             /**
             * The audio file duration in ms 
             */
@@ -73,9 +76,9 @@ interface FilePicker{
         }):void,
         onFail(message:String):void,
     }):void,
-    stopAudio(params:{
+    stopAudio(options:{
         id:String,
-        onStop(params:{
+        onStop(options:{
             /**
             * The audio file stop position in ms 
             */
