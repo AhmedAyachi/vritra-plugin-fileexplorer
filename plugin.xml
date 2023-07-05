@@ -43,9 +43,12 @@
                 <param name="ios-package" value="Filepicker" onload="false"/>
             </feature>
         </config-file>
-        <source-file src="src/ios/FilePickerPlugin.swift"/>
         <source-file src="src/ios/MimeTyper.swift"/>
         <source-file src="src/ios/FilePicker.swift"/>
+        <dependency 
+            id="cordova-plugin-swift-support" 
+            url="https://github.com/AhmedAyachi/cordova-plugin-swift-support"
+        />
     </platform>
 
     <platform name="browser">

@@ -5,7 +5,7 @@ import PhotosUI;
 import QuickLook;
 
 
-class Filepicker:FilePickerPlugin,UIDocumentPickerDelegate,UIDocumentInteractionControllerDelegate,UINavigationControllerDelegate,UIImagePickerControllerDelegate,PHPickerViewControllerDelegate{
+class Filepicker:CordovaPlugin,UIDocumentPickerDelegate,UIDocumentInteractionControllerDelegate,UINavigationControllerDelegate,UIImagePickerControllerDelegate,PHPickerViewControllerDelegate{
 
     var props:[AnyHashable:Any]=[:];
     lazy var entries:[[String:Any?]]=[];
