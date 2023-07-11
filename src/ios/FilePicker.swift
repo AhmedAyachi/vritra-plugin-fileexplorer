@@ -5,7 +5,7 @@ import PhotosUI;
 import QuickLook;
 
 
-class Filepicker:CordovaPlugin,UIDocumentPickerDelegate,UIDocumentInteractionControllerDelegate,UINavigationControllerDelegate,UIImagePickerControllerDelegate,PHPickerViewControllerDelegate{
+class Filepicker:CordovaPlugin,UIDocumentPickerDelegate,UIDocumentInteractionControllerDelegate,UINavigationControllerDelegate,UIImagePickerControllerDelegate,PHPickerViewControllerDelegate {
 
     var props:[AnyHashable:Any]=[:];
     lazy var entries:[[String:Any?]]=[];
@@ -99,9 +99,10 @@ class Filepicker:CordovaPlugin,UIDocumentPickerDelegate,UIDocumentInteractionCon
                     if let url=url {
                         let path="\(manager.temporaryDirectory.path)/\(url.lastPathComponent)";
                         let destination=URL(fileURLWithPath:path);
-                        if((manager.fileExists(atPath:destination.path)&&((try? manager.replaceItemAt(destination,withItemAt:url) != nil) != nil))||((try? manager.moveItem(at:url,to:destination)) != nil)){
+                        if((manager.fileExists(atPath:destination.path)&&((try? manager.replaceItemAt(destination,withItemAt:url) != nil) != nil))||((try? manager.moveItem(at:url,to:destination)) != nil)
+                        ){
                             let entry=Filepicker.getEntryFromURL(destination);
-                            self.entries.append(entry); 
+                            self.entries.append(entry);
                         }
                         if(i==medias.count){
                             self.onPick();
@@ -215,8 +216,10 @@ class Filepicker:CordovaPlugin,UIDocumentPickerDelegate,UIDocumentInteractionCon
                 if let props=command.arguments[0] as? [AnyHashable:Any] {
                     let id=props["id"] as? String ?? "";
                     if !(id.isEmpty){
-                        let path=props["path"] as? String ?? "";
-                        if(!path.isEmpty),let url=path.contains("://") ? URL(string:path):URL(fileURLWithPath:path){
+                        var path=props["path"] as? String ?? "";
+                        if(!path.isEmpty){
+                            if(path.starts(with:"file:///")){path.removeFirst(8)};
+                            let url=URL(fileURLWithPath:path);
                             let player:AVAudioPlayer=try AVAudioPlayer(contentsOf:url);
                             let duration:TimeInterval=player.duration;
                             let atRatio=props["atRatio"] as? Double ?? 0;
@@ -231,9 +234,6 @@ class Filepicker:CordovaPlugin,UIDocumentPickerDelegate,UIDocumentInteractionCon
                             else{
                                 throw Filepicker.Error("Unable to play audio");
                             }
-                        }
-                        else{
-                            throw Filepicker.Error("Path property is required");
                         }
                     }
                     else{

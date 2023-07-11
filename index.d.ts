@@ -9,8 +9,8 @@ interface FilePicker{
         /**
         * if true, the user will be able to pick multiple files at once.
         * default: true.
-        * @IOS
-        * For ios<14, if multiple is true, the user needs to cancel the picker manually
+        * @iOS
+        * For iOS<14, if multiple is true, the user needs to cancel the picker manually
         * after selecting files.
         */
         multiple:multiple,
@@ -22,7 +22,7 @@ interface FilePicker{
         * @example 
         * "image" => "image/*" | "audio,video" => "audio/*,video/*"
         * By default the filpicker allows all types of files
-        * @IOS
+        * @iOS
         * Can't pick images/videos and documents at the same time.
         * to pick images/videos all mimetypes should be image/video type,
         * otherwise a document picker is shown.
@@ -31,7 +31,7 @@ interface FilePicker{
         * because specifying media extensions is not yet supported. 
         * By default the filepicker will pick documents.
         */
-        type:String,
+        type:string,
         /**
          * 
          * @param entry if multiple is true, entry is an array else an object
@@ -47,7 +47,7 @@ interface FilePicker{
     */
     useFileType(path:String,callback:(type:String)=>void):void;
     /**
-    * Opens the path's target file in the system default app.
+    * Opens a local file in the system default app.
     * @see This method may fail on simulators
     */
     open(options:{
@@ -55,7 +55,7 @@ interface FilePicker{
         onFail(message:String):void,
     }):void;
     /**
-    * Plays the specified audio file path on background.
+    * Plays the specified local audio file path on background.
     * @see Even if the webview is closed, The audio will keep playing 
     */
     playAudio(options:{
