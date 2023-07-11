@@ -5,7 +5,7 @@ interface FilePicker{
     /**
     * Shows the filepicker
     */
-    show(options:{
+    show<multiple extends boolean=true>(options:{
         /**
         * if true, the user will be able to pick multiple files at once.
         * default: true.
@@ -13,7 +13,7 @@ interface FilePicker{
         * For ios<14, if multiple is true, the user needs to cancel the picker manually
         * after selecting files.
         */
-        multiple:Boolean,
+        multiple:multiple,
         /**
         * The mimeType of pickable files.
         * Use comma-seperated mimeTypes for multiple file types.
@@ -36,7 +36,7 @@ interface FilePicker{
          * 
          * @param entry if multiple is true, entry is an array else an object
          */
-        onPick(entry:FilePickerEntry|FilePickerEntry[]):void,
+        onPick(entry:multiple extends true?FilePickerEntry[]:FilePickerEntry):void,
     }):void;
     /**
     * Gets the mimeType of the path's target file.
