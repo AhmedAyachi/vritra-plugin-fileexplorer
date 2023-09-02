@@ -1,4 +1,4 @@
-package com.ahmedayachi.filepicker;
+package com.corella.filepicker;
 
 import org.apache.cordova.*;
 import org.json.JSONArray;

@@ -1,19 +1,24 @@
 {
-  "name": "cordova-plugin-filepicker",
-  "version": "1.0.0",
+  "name": "corella-plugin-filepicker",
+  "version": "0.0.0",
   "main": "www/index.js",
   "types": "index.d.ts",
-  "description": "cordova custom plugin filepicker",
+  "description": "A corella filepicker plugin for the cordova framework",
   "cordova": {
-    "id": "cordova-plugin-filepicker",
+    "id": "corella-plugin-filepicker",
     "platforms": [
-      "android"
+      "android",
+      "ios",
+      "browser"
     ]
   },
   "keywords": [
-    "ecosystem:cordova",
-    "cordova-android"
+    "filepicker",
+    "cordova","corella",
+    "cordova-corella",
+    "cordova-android",
+    "cordova-ios"
   ],
   "author": "Ahmed Ayachi",
-  "license": "ISC"
+  "license": "MIT"
 }
