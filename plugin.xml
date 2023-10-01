@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version="1.0" encoding="utf-8"?>
 <plugin 
     id="corella-plugin-filepicker" 
     version="1.0.0" 
@@ -32,8 +32,8 @@
                 />
            </provider>
         </config-file>
-        <source-file src="src/android/FilePicker.java" target-dir="src/com/ahmedayachi/filepicker/FilePicker"/>
-        <source-file src="src/android/FileHelper.java" target-dir="src/com/ahmedayachi/filepicker/FilePicker"/>
+        <source-file src="src/android/FilePicker.java" target-dir="src/com/corella/FilePicker"/>
+        <source-file src="src/android/FileHelper.java" target-dir="src/com/corella/FilePicker"/>
         <source-file src="src/android/filepicker_provider_paths.xml" target-dir="res/xml"/>
     </platform>
     
@@ -47,7 +47,7 @@
         <source-file src="src/ios/FilePicker.swift"/>
         <dependency 
             id="corella-plugin-swift-support" 
-            url="https://github.com/AhmedAyachi/corella-plugin-swift-support"
+            url="https://github.com/corella/corella-plugin-swift-support"
         />
     </platform>
 
