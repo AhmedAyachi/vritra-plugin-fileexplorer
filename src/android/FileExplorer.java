@@ -90,7 +90,9 @@ public class FileExplorer extends CordovaPlugin {
     public void onRequestPermissionsResult(int ref,String[] permissions,int[] results) throws JSONException{
         if(results[0]==PackageManager.PERMISSION_GRANTED){
             final Intent intent=new Intent(Intent.ACTION_GET_CONTENT);
-            intent.setType(props.optString("type","*/*"));
+            String type=props.optString("type","*/*");
+            if(!type.contains("/")) type+="/*";
+            intent.setType(type);
             intent.putExtra(Intent.EXTRA_LOCAL_ONLY,true);
             intent.addCategory(Intent.CATEGORY_OPENABLE);
             final Boolean multiple=props.optBoolean("multiple",true);
@@ -284,18 +286,6 @@ public class FileExplorer extends CordovaPlugin {
         props.put("fullpath","file://"+file.getAbsolutePath());
         props.put("lastModified",file.lastModified());
     }
-
-    /* static Boolean isMediaFile(String path){
-        Boolean isMedia=false;
-        final String type=URLConnection.guessContentTypeFromName(path);
-        final String[] mediaTypes={"image","audio","video"};
-        int i=0,length=mediaTypes.length;
-        while((!isMedia)&&(i<length)){
-            isMedia=type.startsWith(mediaTypes[i]);
-            i++;
-        }
-        return isMedia;
-    } */
 
     static String parsePath(String path){
         if(path.startsWith("file://")){

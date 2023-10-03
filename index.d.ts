@@ -65,7 +65,11 @@ interface FileExplorer {
         id:String,
         path:String,
         /**
-        * A value in 0..1 used to play the audio file at a certain position. 
+        * A fraction used to specify from which start point should play the audio.
+        * @example 
+        * 0 => from the begining
+        * 0.5 => from the middle
+        * @default 0
         */
         atRatio:Number,
         onPlay(options:{
