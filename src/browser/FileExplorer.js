@@ -1,15 +1,16 @@
 
 
 module.exports={
-    show:(props)=>{
-        const filepicker=document.createElement("input"),{multiple=true}=props;
-        filepicker.type="file";
-        filepicker.multiple=multiple;
-        filepicker.onchange=()=>{
-            const {onPick}=props,{files}=filepicker;
+    pick:(props)=>{
+        const {multiple=true,onPick}=props;
+        const fileexplorer=document.createElement("input");
+        fileexplorer.type="file";
+        fileexplorer.multiple=multiple;
+        fileexplorer.onchange=()=>{
+            const {files}=fileexplorer;
             onPick&&onPick(multiple?[...files]:files[0]);
         }
-        filepicker.click();
+        fileexplorer.click();
     },
     useFileType:(path,callback)=>{
         let type=null;

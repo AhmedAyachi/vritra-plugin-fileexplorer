@@ -1,4 +1,4 @@
-package com.corella.filepicker;
+package com.corella.fileexplorer;
 
 import android.annotation.SuppressLint;
 import android.content.ContentUris;

@@ -1,14 +1,14 @@
-declare const FilePicker:FilePicker;
+declare const FileExplorer:FileExplorer;
 
 
-interface FilePicker{
+interface FileExplorer {
     /**
-    * Shows the filepicker
+    * Shows a filepicker
     */
-    show<multiple extends boolean=true>(options:{
+    pick<multiple extends boolean=true>(options:{
         /**
         * if true, the user will be able to pick multiple files at once.
-        * default: true.
+        * @default true
         * @iOS
         * For iOS<14, if multiple is true, the user needs to cancel the picker manually
         * after selecting files.
@@ -29,14 +29,14 @@ interface FilePicker{
         * Type extensions are ignored, values are actually: "image"|"video"|"image,video".
         * All three values will have the same effect
         * because specifying media extensions is not yet supported. 
-        * By default the filepicker will pick documents.
+        * By default the FileExplorer will pick documents.
         */
         type:string,
         /**
          * 
-         * @param entry if multiple is true, entry is an array else an object
+         * @param value if multiple is true, entry is an array else an object
          */
-        onPick(entry:multiple extends true?FilePickerEntry[]:FilePickerEntry):void,
+        onPick(value:multiple extends true?FileExplorerEntry[]:FileExplorerEntry):void,
     }):void;
     /**
     * Gets the mimeType of the path's target file.
@@ -48,7 +48,7 @@ interface FilePicker{
     useFileType(path:String,callback:(type:String)=>void):void;
     /**
     * Opens a local file in the system default app.
-    * @see This method may fail on simulators
+    * @notice This method may fail on simulators
     */
     open(options:{
         path:String,
@@ -56,7 +56,7 @@ interface FilePicker{
     }):void;
     /**
     * Plays the specified local audio file path on background.
-    * @see Even if the webview is closed, The audio will keep playing 
+    * @notice Even if the webview is closed, The audio will keep playing 
     */
     playAudio(options:{
         /**
@@ -87,7 +87,7 @@ interface FilePicker{
     }):void,
 }
 
-interface FilePickerEntry{
+interface FileExplorerEntry {
     /**
     * File name with extension 
     */

@@ -1,4 +1,4 @@
-package com.corella.filepicker;
+package com.corella.fileexplorer;
 
 import org.apache.cordova.*;
 import org.json.JSONArray;
@@ -26,7 +26,7 @@ import android.media.MediaPlayer;
 import android.media.AudioManager;
 
 
-public class FilePicker extends CordovaPlugin{
+public class FileExplorer extends CordovaPlugin {
 
     static protected Context context;
     static protected Resources resources;
@@ -40,16 +40,16 @@ public class FilePicker extends CordovaPlugin{
 
     @Override
     public void initialize(CordovaInterface cordova,CordovaWebView webview){
-        FilePicker.cordova=cordova;
-        FilePicker.context=cordova.getContext();
-        FilePicker.resources=FilePicker.context.getResources();
-        FilePicker.packagename=FilePicker.context.getPackageName();
+        FileExplorer.cordova=cordova;
+        FileExplorer.context=cordova.getContext();
+        FileExplorer.resources=FileExplorer.context.getResources();
+        FileExplorer.packagename=FileExplorer.context.getPackageName();
     }
     @Override
     public boolean execute(String action,JSONArray args,CallbackContext callbackContext) throws JSONException{
-        if(action.equals("show")){
+        if(action.equals("pick")){
             JSONObject props=args.getJSONObject(0);
-            this.show(props,callbackContext);
+            this.pick(props,callbackContext);
             return true;
         }
         else if(action.equals("useFileType")){
@@ -75,7 +75,7 @@ public class FilePicker extends CordovaPlugin{
         return false;
     }
 
-    private void show(JSONObject props,CallbackContext callback) throws JSONException{
+    private void pick(JSONObject props,CallbackContext callback) throws JSONException{
         callbacks.put(Integer.toString(ref),callback);
         this.props=props;
         if(cordova.hasPermission(permission.READ_EXTERNAL_STORAGE)){
@@ -96,11 +96,11 @@ public class FilePicker extends CordovaPlugin{
             final Boolean multiple=props.optBoolean("multiple",true);
             intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE,multiple); 
             this.multiple=multiple;
-            cordova.startActivityForResult(this,Intent.createChooser(intent,"FilePicker"),ref);
+            cordova.startActivityForResult(this,Intent.createChooser(intent,"FileExplorer"),ref);
         }
         else{
             callbacks.remove(Integer.toString(ref));
-            Toast.makeText(context,"FilePicker Permission Denied",Toast.LENGTH_SHORT).show();
+            Toast.makeText(context,"FileExplorer Permission Denied",Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -123,7 +123,7 @@ public class FilePicker extends CordovaPlugin{
                             final int length=data.getItemCount();
                             for(int i=0;i<length;i++){
                                 final Uri uri=data.getItemAt(i).getUri();
-                                final JSONObject props=FilePicker.getFileProps(uri);
+                                final JSONObject props=FileExplorer.getFileProps(uri);
                                 if(props!=null){
                                     entries.put(props);
                                 }
@@ -131,7 +131,7 @@ public class FilePicker extends CordovaPlugin{
                         }
                         else{
                             final Uri uri=intent.getData();
-                            final JSONObject props=FilePicker.getFileProps(uri);
+                            final JSONObject props=FileExplorer.getFileProps(uri);
                             if(props!=null){
                                 entries.put(props);
                             }
@@ -142,7 +142,7 @@ public class FilePicker extends CordovaPlugin{
                     }
                     else{
                         final Uri uri=intent.getData();
-                        final JSONObject props=FilePicker.getFileProps(uri);
+                        final JSONObject props=FileExplorer.getFileProps(uri);
                         callback.success(props);
                     }
                 }
@@ -253,7 +253,7 @@ public class FilePicker extends CordovaPlugin{
             final String realPath=FileHelper.getRealPath(uri,cordova);
             if((realPath!=null)&&(realPath.length()>0)){
                 final File file=new File(realPath);
-                FilePicker.setFileProps(file,props);
+                FileExplorer.setFileProps(file,props);
             }
             else{
                 throw new Exception();
@@ -264,7 +264,7 @@ public class FilePicker extends CordovaPlugin{
             final File location=Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
             final File file=new File(location,name);
             if(file.exists()){
-                FilePicker.setFileProps(file,props);
+                FileExplorer.setFileProps(file,props);
             }
             else{
                 props=null;
@@ -305,6 +305,6 @@ public class FilePicker extends CordovaPlugin{
     }
 
     static protected int getResourceId(String type,String name){
-        return resources.getIdentifier(name,type,FilePicker.packagename);
+        return resources.getIdentifier(name,type,FileExplorer.packagename);
     }
 }

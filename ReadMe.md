@@ -1,4 +1,4 @@
-# Corella-plugin-filepicker
+# Corella-plugin-fileexplorer
 
-A cordova plugin to open a filepicker on android/iOS.
-Defines a global **FilePicker** object.
+A cordova plugin for picking and opening files on android/iOS.
+Defines a global **FileExplorer** object.

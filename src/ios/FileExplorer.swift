@@ -5,24 +5,24 @@ import PhotosUI;
 import QuickLook;
 
 
-class Filepicker:CordovaPlugin,UIDocumentPickerDelegate,UIDocumentInteractionControllerDelegate,UINavigationControllerDelegate,UIImagePickerControllerDelegate,PHPickerViewControllerDelegate {
+class FileExplorer:CordovaPlugin,UIDocumentPickerDelegate,UIDocumentInteractionControllerDelegate,UINavigationControllerDelegate,UIImagePickerControllerDelegate,PHPickerViewControllerDelegate {
 
     var props:[AnyHashable:Any]=[:];
     lazy var entries:[[String:Any?]]=[];
     var multiple=true;
-    var showCommand:CDVInvokedUrlCommand?=nil;
+    var pickCommand:CDVInvokedUrlCommand?=nil;
     static var audioplayers:[String:AVAudioPlayer]=[:];
     var previewurl:URL?=nil;
 
-    @objc(show:)
-    func show(command:CDVInvokedUrlCommand){
+    @objc(pick:)
+    func pick(command:CDVInvokedUrlCommand){
         if let props=command.arguments[0] as? [AnyHashable:Any] {
             DispatchQueue.main.async(execute:{[self] in
-                self.showCommand=command;
+                self.pickCommand=command;
                 self.props=props;
                 self.multiple=props["multiple"] as? Bool ?? true;
                 let type=props["type"] as? String ?? "*/*";
-                let isMediaMode=Filepicker.isMediaMode(type);
+                let isMediaMode=FileExplorer.isMediaMode(type);
                 isMediaMode ? self.presentMediaPicker():self.presentDocumentsPicker();
             });
         }
@@ -32,10 +32,10 @@ class Filepicker:CordovaPlugin,UIDocumentPickerDelegate,UIDocumentInteractionCon
         var pickerVC:UIDocumentPickerViewController;
         let type:String=props["type"] as? String ?? "*/*";
         if#available(iOS 14,*){
-            pickerVC=UIDocumentPickerViewController(forOpeningContentTypes:Filepicker.getUTTypes(type),asCopy:false);
+            pickerVC=UIDocumentPickerViewController(forOpeningContentTypes:FileExplorer.getUTTypes(type),asCopy:false);
         }
         else {
-            pickerVC=UIDocumentPickerViewController(documentTypes:Filepicker.getMimeTypes(type),in:UIDocumentPickerMode.open);
+            pickerVC=UIDocumentPickerViewController(documentTypes:FileExplorer.getMimeTypes(type),in:UIDocumentPickerMode.open);
         }
         pickerVC.allowsMultipleSelection=multiple;
         pickerVC.delegate=self;
@@ -46,7 +46,7 @@ class Filepicker:CordovaPlugin,UIDocumentPickerDelegate,UIDocumentInteractionCon
         let included=didPickDocumentsAt.filter({url in
             let accessable=url.startAccessingSecurityScopedResource();
             if(accessable){
-                entries.append(Filepicker.getEntryFromURL(url));
+                entries.append(FileExplorer.getEntryFromURL(url));
             };
             return accessable;
         });
@@ -101,7 +101,7 @@ class Filepicker:CordovaPlugin,UIDocumentPickerDelegate,UIDocumentInteractionCon
                         let destination=URL(fileURLWithPath:path);
                         if((manager.fileExists(atPath:destination.path)&&((try? manager.replaceItemAt(destination,withItemAt:url) != nil) != nil))||((try? manager.moveItem(at:url,to:destination)) != nil)
                         ){
-                            let entry=Filepicker.getEntryFromURL(destination);
+                            let entry=FileExplorer.getEntryFromURL(destination);
                             self.entries.append(entry);
                         }
                         if(i==medias.count){
@@ -116,7 +116,7 @@ class Filepicker:CordovaPlugin,UIDocumentPickerDelegate,UIDocumentInteractionCon
 
     func imagePickerController(_ pickerVC:UIImagePickerController,didFinishPickingMediaWithInfo mediainfo:[UIImagePickerController.InfoKey:Any]){
         if let value=mediainfo[.imageURL] ?? mediainfo[.mediaURL],let url=value as? URL {
-            let entry=Filepicker.getEntryFromURL(url);
+            let entry=FileExplorer.getEntryFromURL(url);
             entries.append(entry);
         };
         if(!multiple){
@@ -133,10 +133,10 @@ class Filepicker:CordovaPlugin,UIDocumentPickerDelegate,UIDocumentInteractionCon
 
     func onPick(){
         if(multiple){
-            success(showCommand!,entries);
+            success(pickCommand!,entries);
         }
         else{
-            success(showCommand!,entries[0] as [AnyHashable:Any]);
+            success(pickCommand!,entries[0] as [AnyHashable:Any]);
         }
         self.reset();
     }
@@ -180,11 +180,11 @@ class Filepicker:CordovaPlugin,UIDocumentPickerDelegate,UIDocumentInteractionCon
                         if(!opener.presentPreview(animated:true)){
                             url.stopAccessingSecurityScopedResource();
                             self.previewurl=nil;
-                            throw Filepicker.Error("Can't open \(url.lastPathComponent)");
+                            throw FileExplorer.Error("Can't open \(url.lastPathComponent)");
                         }
                     }
                     else{
-                        throw Filepicker.Error("Can't open \(url.lastPathComponent)");
+                        throw FileExplorer.Error("Can't open \(url.lastPathComponent)");
                     }
                 }
                 catch{
@@ -225,19 +225,19 @@ class Filepicker:CordovaPlugin,UIDocumentPickerDelegate,UIDocumentInteractionCon
                             let atRatio=props["atRatio"] as? Double ?? 0;
                             player.currentTime=atRatio*duration;
                             if(player.play()){
-                                Filepicker.audioplayers[id]=player;
+                                FileExplorer.audioplayers[id]=player;
                                 let params:[String:Any]=[
                                     "duration":duration*1000,
                                 ];
                                 success(command,params);
                             }
                             else{
-                                throw Filepicker.Error("Unable to play audio");
+                                throw FileExplorer.Error("Unable to play audio");
                             }
                         }
                     }
                     else{
-                        throw Filepicker.Error("Id property is required");
+                        throw FileExplorer.Error("Id property is required");
                     }
                 }
             }
@@ -252,13 +252,13 @@ class Filepicker:CordovaPlugin,UIDocumentPickerDelegate,UIDocumentInteractionCon
         DispatchQueue.main.async(execute:{[self] in
             if let props=command.arguments[0] as? [AnyHashable:Any] {
                 let id=props["id"] as? String ?? "";
-                if(!id.isEmpty),let player=Filepicker.audioplayers[id]{
+                if(!id.isEmpty),let player=FileExplorer.audioplayers[id]{
                     player.stop();
                     if(!player.isPlaying){
                         let params:[String:Any]=[
                             "timestamp":player.currentTime*1000,
                         ];
-                        Filepicker.audioplayers.removeValue(forKey:id);
+                        FileExplorer.audioplayers.removeValue(forKey:id);
                         success(command,params);
                     }
                 }
@@ -269,7 +269,7 @@ class Filepicker:CordovaPlugin,UIDocumentPickerDelegate,UIDocumentInteractionCon
     static func isMediaMode(_ token:String)->Bool{
         var isMediaMode=false;
         if(token != "*/*"){
-            let types=Filepicker.getMimeTypes(token);
+            let types=FileExplorer.getMimeTypes(token);
             isMediaMode=types.allSatisfy({type in type.hasPrefix("image")||type.hasPrefix("video")});
         }
         return isMediaMode;
@@ -339,7 +339,7 @@ class Filepicker:CordovaPlugin,UIDocumentPickerDelegate,UIDocumentInteractionCon
     }
 
     /* static func getMediaTypes(_ token:String)->[String]{
-        var types=Filepicker.getMediaTypes(token);
+        var types=FileExplorer.getMediaTypes(token);
         let length=types.count;
         for i in 0..<length {
             var type=types[i];

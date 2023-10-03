@@ -1,11 +1,11 @@
 {
-  "name": "corella-plugin-filepicker",
-  "version": "0.0.0",
+  "name": "corella-plugin-fileexplorer",
+  "version": "0.0.1",
   "main": "www/index.js",
   "types": "index.d.ts",
-  "description": "A corella filepicker plugin for the cordova framework",
+  "description": "A cordova plugin for picking and opening files",
   "cordova": {
-    "id": "corella-plugin-filepicker",
+    "id": "corella-plugin-fileexplorer",
     "platforms": [
       "android",
       "ios",
@@ -13,7 +13,7 @@
     ]
   },
   "keywords": [
-    "filepicker",
+    "fileexplorer",
     "cordova","corella",
     "cordova-corella",
     "cordova-android",
