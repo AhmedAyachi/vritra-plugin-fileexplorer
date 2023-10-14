@@ -1,11 +1,11 @@
 {
-  "name": "corella-plugin-fileexplorer",
+  "name": "wurm-plugin-fileexplorer",
   "version": "0.0.1",
   "main": "www/index.js",
   "types": "index.d.ts",
   "description": "A cordova plugin for picking and opening files",
   "cordova": {
-    "id": "corella-plugin-fileexplorer",
+    "id": "wurm-plugin-fileexplorer",
     "platforms": [
       "android",
       "ios",
@@ -14,8 +14,8 @@
   },
   "keywords": [
     "fileexplorer",
-    "cordova","corella",
-    "cordova-corella",
+    "cordova","wurm",
+    "cordova-wurm",
     "cordova-android",
     "cordova-ios"
   ],

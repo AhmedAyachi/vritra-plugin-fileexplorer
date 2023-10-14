@@ -1,4 +1,4 @@
-package com.corella.fileexplorer;
+package com.wurm.fileexplorer;
 
 import org.apache.cordova.*;
 import org.json.JSONArray;

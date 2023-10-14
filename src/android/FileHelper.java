@@ -1,4 +1,4 @@
-package com.corella.fileexplorer;
+package com.wurm.fileexplorer;
 
 import android.annotation.SuppressLint;
 import android.content.ContentUris;

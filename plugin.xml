@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <plugin 
-    id="corella-plugin-fileexplorer" 
+    id="wurm-plugin-fileexplorer" 
     version="0.0.1" 
     xmlns="http://apache.org/cordova/ns/plugins/1.0" 
     xmlns:android="http://schemas.android.com/apk/res/android"
@@ -13,7 +13,7 @@
     <platform name="android">
         <config-file target="res/xml/config.xml" parent="/*">
             <feature name="FileExplorer">
-                <param name="android-package" value="com.corella.fileexplorer.FileExplorer"/>
+                <param name="android-package" value="com.wurm.fileexplorer.FileExplorer"/>
             </feature>
         </config-file>
         <!-- <edit-config file="app/src/main/AndroidManifest.xml" target="/manifest/application" mode="merge">
@@ -32,8 +32,8 @@
                 />
            </provider>
         </config-file>
-        <source-file src="src/android/FileExplorer.java" target-dir="src/com/corella/FileExplorer"/>
-        <source-file src="src/android/FileHelper.java" target-dir="src/com/corella/FileExplorer"/>
+        <source-file src="src/android/FileExplorer.java" target-dir="src/com/wurm/FileExplorer"/>
+        <source-file src="src/android/FileHelper.java" target-dir="src/com/wurm/FileExplorer"/>
         <source-file src="src/android/fileexplorer_provider_paths.xml" target-dir="res/xml"/>
     </platform>
     
@@ -46,8 +46,8 @@
         <source-file src="src/ios/MimeTyper.swift"/>
         <source-file src="src/ios/FileExplorer.swift"/>
         <dependency 
-            id="corella-plugin-swift-support" 
-            url="https://github.com/corella/corella-plugin-swift-support"
+            id="wurm-plugin-swift-support" 
+            url="https://github.com/wurm/wurm-plugin-swift-support"
         />
     </platform>
 
