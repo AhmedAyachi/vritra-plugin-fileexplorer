@@ -1,11 +1,11 @@
 {
-  "name": "wurm-plugin-fileexplorer",
+  "name": "vritra-plugin-fileexplorer",
   "version": "0.0.1",
   "main": "www/index.js",
   "types": "index.d.ts",
   "description": "A cordova plugin for picking and opening files",
   "cordova": {
-    "id": "wurm-plugin-fileexplorer",
+    "id": "vritra-plugin-fileexplorer",
     "platforms": [
       "android",
       "ios",
@@ -14,8 +14,8 @@
   },
   "keywords": [
     "fileexplorer",
-    "cordova","wurm",
-    "cordova-wurm",
+    "cordova","vritra",
+    "cordova-vritra",
     "cordova-android",
     "cordova-ios"
   ],

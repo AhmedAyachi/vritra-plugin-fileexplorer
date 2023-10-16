@@ -1,4 +1,4 @@
-package com.wurm.fileexplorer;
+package com.vritra.fileexplorer;
 
 import android.annotation.SuppressLint;
 import android.content.ContentUris;
