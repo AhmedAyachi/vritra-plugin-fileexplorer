@@ -1,6 +1,6 @@
 {
   "name": "vritra-plugin-fileexplorer",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "main": "www/index.js",
   "types": "index.d.ts",
   "description": "A cordova plugin for picking and opening files",

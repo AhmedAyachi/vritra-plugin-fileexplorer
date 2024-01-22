@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <plugin 
     id="vritra-plugin-fileexplorer" 
-    version="1.0.0" 
+    version="1.0.1" 
     xmlns="http://apache.org/cordova/ns/plugins/1.0" 
     xmlns:android="http://schemas.android.com/apk/res/android"
 >
@@ -16,9 +16,6 @@
                 <param name="android-package" value="com.vritra.fileexplorer.FileExplorer"/>
             </feature>
         </config-file>
-        <!-- <edit-config file="app/src/main/AndroidManifest.xml" target="/manifest/application" mode="merge">
-            <application android:requestLegacyExternalStorage="true"/>
-        </edit-config> -->
         <config-file target="AndroidManifest.xml" parent="application">
             <provider
                 android:name="androidx.core.content.FileProvider"
@@ -35,6 +32,9 @@
         <source-file src="src/android/FileExplorer.java" target-dir="src/com/vritra/FileExplorer"/>
         <source-file src="src/android/FileHelper.java" target-dir="src/com/vritra/FileExplorer"/>
         <source-file src="src/android/fileexplorer_provider_paths.xml" target-dir="res/xml"/>
+        <config-file target="AndroidManifest.xml" parent=".">
+            <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+        </config-file>
     </platform>
     
     <platform name="ios">

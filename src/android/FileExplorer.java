@@ -24,6 +24,7 @@ import android.app.Activity;
 import androidx.core.content.FileProvider;
 import android.media.MediaPlayer;
 import android.media.AudioManager;
+import android.os.Build;
 
 
 public class FileExplorer extends CordovaPlugin {
@@ -46,7 +47,7 @@ public class FileExplorer extends CordovaPlugin {
         FileExplorer.packagename=FileExplorer.context.getPackageName();
     }
     @Override
-    public boolean execute(String action,JSONArray args,CallbackContext callbackContext) throws JSONException{
+    public boolean execute(String action,JSONArray args,CallbackContext callbackContext) throws JSONException {
         if(action.equals("pick")){
             JSONObject props=args.getJSONObject(0);
             this.pick(props,callbackContext);
@@ -75,40 +76,35 @@ public class FileExplorer extends CordovaPlugin {
         return false;
     }
 
-    private void pick(JSONObject props,CallbackContext callback) throws JSONException{
+    private void pick(JSONObject props,CallbackContext callback) throws JSONException {
         callbacks.put(Integer.toString(ref),callback);
         this.props=props;
-        if(cordova.hasPermission(permission.READ_EXTERNAL_STORAGE)){
-            final int[] results={PackageManager.PERMISSION_GRANTED};
-            this.onRequestPermissionsResult(ref,null,results);
+        if((Build.VERSION.SDK_INT>Build.VERSION_CODES.Q)||cordova.hasPermission(permission.READ_EXTERNAL_STORAGE)){
+            this.openFilePicker(ref);
         }
         else{
             cordova.requestPermission(this,ref,permission.READ_EXTERNAL_STORAGE);
         }
     }
-
-    public void onRequestPermissionsResult(int ref,String[] permissions,int[] results) throws JSONException{
-        if(results[0]==PackageManager.PERMISSION_GRANTED){
-            final Intent intent=new Intent(Intent.ACTION_GET_CONTENT);
-            String type=props.optString("type","*/*");
-            if(!type.contains("/")) type+="/*";
-            intent.setType(type);
-            intent.putExtra(Intent.EXTRA_LOCAL_ONLY,true);
-            intent.addCategory(Intent.CATEGORY_OPENABLE);
-            final Boolean multiple=props.optBoolean("multiple",true);
-            intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE,multiple); 
-            this.multiple=multiple;
-            cordova.startActivityForResult(this,Intent.createChooser(intent,"FileExplorer"),ref);
-        }
+    public void onRequestPermissionResult(int ref,String[] permissions,int[] results) throws JSONException {
+        if(results[0]==PackageManager.PERMISSION_GRANTED) this.openFilePicker(ref);
         else{
             callbacks.remove(Integer.toString(ref));
             Toast.makeText(context,"FileExplorer Permission Denied",Toast.LENGTH_SHORT).show();
         }
-    }
-
-    public void onRequestPermissionResult(int ref,String[] permissions,int[] results) throws JSONException{
-        this.onRequestPermissionsResult(ref,permissions,results);
     };
+    public void openFilePicker(int ref){
+        final Intent intent=new Intent(Intent.ACTION_GET_CONTENT);
+        String type=props.optString("type","*/*");
+        if(!type.contains("/")) type+="/*";
+        intent.setType(type);
+        intent.putExtra(Intent.EXTRA_LOCAL_ONLY,true);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        final Boolean multiple=props.optBoolean("multiple",true);
+        intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE,multiple); 
+        this.multiple=multiple;
+        cordova.startActivityForResult(this,Intent.createChooser(intent,"FileExplorer"),ref);
+    }
     
     @Override
     public void onActivityResult(int ref,int resultCode,Intent intent){
