@@ -4,27 +4,26 @@ import org.apache.cordova.*;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONException;
+import java.io.File;
+import java.util.Random;
+import java.io.IOException;
+import java.net.URLConnection;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ClipData;
 import android.content.res.Resources;
-import java.util.Random;
-import android.net.Uri;
-import java.io.File;
-import java.io.IOException;
-import java.net.URLConnection;
-import android.Manifest.permission;
 import android.content.pm.PackageManager;
-import android.content.ContentResolver;
+import android.Manifest.permission;
 import android.database.Cursor;
 import android.provider.OpenableColumns;
 import android.os.Environment;
-import android.widget.Toast;
 import android.app.Activity;
 import androidx.core.content.FileProvider;
 import android.media.MediaPlayer;
 import android.media.AudioManager;
+import android.widget.Toast;
 import android.os.Build;
+import android.net.Uri;
 
 
 public class FileExplorer extends CordovaPlugin {
@@ -32,7 +31,6 @@ public class FileExplorer extends CordovaPlugin {
     static protected Context context;
     static protected Resources resources;
     static protected String packagename;
-    static protected CordovaInterface cordova;
     protected static final JSONObject mediaplayers=new JSONObject();
     protected static final JSONObject callbacks=new JSONObject();
     final int ref=new Random().nextInt(999);
@@ -41,7 +39,6 @@ public class FileExplorer extends CordovaPlugin {
 
     @Override
     public void initialize(CordovaInterface cordova,CordovaWebView webview){
-        FileExplorer.cordova=cordova;
         FileExplorer.context=cordova.getContext();
         FileExplorer.resources=FileExplorer.context.getResources();
         FileExplorer.packagename=FileExplorer.context.getPackageName();
@@ -79,15 +76,13 @@ public class FileExplorer extends CordovaPlugin {
     private void pick(JSONObject props,CallbackContext callback) throws JSONException {
         callbacks.put(Integer.toString(ref),callback);
         this.props=props;
-        if((Build.VERSION.SDK_INT>Build.VERSION_CODES.Q)||cordova.hasPermission(permission.READ_EXTERNAL_STORAGE)){
-            this.openFilePicker(ref);
-        }
-        else{
-            cordova.requestPermission(this,ref,permission.READ_EXTERNAL_STORAGE);
-        }
+        if(cordova.hasPermission(permission.READ_EXTERNAL_STORAGE)) this.openFilePicker(ref);
+        else cordova.requestPermission(this,ref,permission.READ_EXTERNAL_STORAGE);
     }
     public void onRequestPermissionResult(int ref,String[] permissions,int[] results) throws JSONException {
-        if(results[0]==PackageManager.PERMISSION_GRANTED) this.openFilePicker(ref);
+        if((Build.VERSION.SDK_INT>Build.VERSION_CODES.Q)||(results[0]==PackageManager.PERMISSION_GRANTED)){
+            this.openFilePicker(ref);
+        }
         else{
             callbacks.remove(Integer.toString(ref));
             Toast.makeText(context,"FileExplorer Permission Denied",Toast.LENGTH_SHORT).show();
@@ -144,7 +139,9 @@ public class FileExplorer extends CordovaPlugin {
                         callback.success(props);
                     }
                 }
-                catch(Exception exception){}
+                catch(Exception exception){
+                    Toast.makeText(context,"exception:"+exception.getMessage(),Toast.LENGTH_SHORT).show();
+                }
             }
             callback.error("");
         }
@@ -238,49 +235,46 @@ public class FileExplorer extends CordovaPlugin {
         }
     }
 
-    static protected JSONObject getFileProps(Uri uri) throws Exception{
-        JSONObject props=new JSONObject();
-        try{
-            final ContentResolver resolver=context.getContentResolver();
-            final Cursor cursor=resolver.query(uri,null,null,null,null);
+    static protected JSONObject getFileProps(Uri uri) throws Exception {
+        JSONObject props=null;
+        final Cursor cursor=context.getContentResolver().query(uri,null,null,null,null);
+        File file=null;
+        String filename=null;
+        if(cursor.moveToFirst()){
+            props=new JSONObject();
             int nameIndex=cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
             int sizeIndex=cursor.getColumnIndex(OpenableColumns.SIZE);
-            cursor.moveToFirst();
-            props.put("name",cursor.getString(nameIndex));
-            props.put("size",cursor.getLong(sizeIndex));
-            final String realPath=FileHelper.getRealPath(uri,cordova);
-            if((realPath!=null)&&(realPath.length()>0)){
-                final File file=new File(realPath);
-                FileExplorer.setFileProps(file,props);
-            }
-            else{
-                throw new Exception();
-            }
-        }
-        catch(Exception exception){
-            final String name=props.optString("name");
-            final File location=Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
-            final File file=new File(location,name);
-            if(file.exists()){
-                FileExplorer.setFileProps(file,props);
-            }
-            else{
-                props=null;
-                Toast.makeText(context,"Can't access "+name+". Please try selecting it from another location",Toast.LENGTH_SHORT).show();
+            filename=cursor.getString(nameIndex);
+            final Long filesize=cursor.getLong(sizeIndex);
+            cursor.close();
+            file=FileFinder.getUriFile(context,uri);
+            if(file==null) file=FileFinder.getExternalStoragePublicFile(filename);
+            if(file!=null){
+                props.put("name",filename);
+                props.put("size",filesize);
+                FileExplorer.assignFileToJSONObject(file,props);
             }
         }
-        
+        else cursor.close();
+        if(file==null){
+            props=null;
+            String message="Couldn't access "+(filename==null?"file":filename)+".";
+            if(Build.VERSION.SDK_INT<=Build.VERSION_CODES.R){
+                message+="Please try selecting it from another location";
+            }
+            Toast.makeText(context,message,Toast.LENGTH_SHORT).show();
+        }
         return props;
     }
 
 
-    static void setFileProps(File file,JSONObject props) throws Exception{
+    static void assignFileToJSONObject(File file,JSONObject object) throws Exception {
         final String name=file.getName();
-        props.put("name",name);
-        props.put("path",file.getPath());
-        props.put("location",file.getParent());
-        props.put("fullpath","file://"+file.getAbsolutePath());
-        props.put("lastModified",file.lastModified());
+        object.put("name",name);
+        object.put("path",file.getPath());
+        object.put("location",file.getParent());
+        object.put("fullpath","file://"+file.getAbsolutePath());
+        object.put("lastModified",file.lastModified());
     }
 
     static String parsePath(String path){
