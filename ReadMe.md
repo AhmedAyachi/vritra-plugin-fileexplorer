@@ -3,4 +3,10 @@
 A cordova plugin for picking and opening files on android/iOS.
 Defines a global **FileExplorer** object.
 
+# Installation
+After installing globally the cordova cli, execute:
+```
+cordova plugin add vritra-plugin-fileexplorer
+```
+
 [See documentation](https://vritrajs.github.io/#cordovaplugins#fileexplorer)

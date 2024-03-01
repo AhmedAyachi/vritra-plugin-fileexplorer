@@ -275,8 +275,4 @@ public class FileExplorer extends VritraPlugin {
         }
         return path;
     }
-
-    static protected int getResourceId(String type,String name){
-        return resources.getIdentifier(name,type,FileExplorer.packageName);
-    }
 }
