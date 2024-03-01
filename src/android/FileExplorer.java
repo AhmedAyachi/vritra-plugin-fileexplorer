@@ -1,12 +1,13 @@
 package com.vritra.fileexplorer;
 
+import com.vritra.common.*;
 import org.apache.cordova.*;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONException;
 import java.io.File;
-import java.util.Random;
 import java.io.IOException;
+import java.util.Random;
 import java.net.URLConnection;
 import android.content.Context;
 import android.content.Intent;
@@ -26,23 +27,14 @@ import android.os.Build;
 import android.net.Uri;
 
 
-public class FileExplorer extends CordovaPlugin {
+public class FileExplorer extends VritraPlugin {
 
-    static protected Context context;
-    static protected Resources resources;
-    static protected String packagename;
     protected static final JSONObject mediaplayers=new JSONObject();
     protected static final JSONObject callbacks=new JSONObject();
     final int ref=new Random().nextInt(999);
     JSONObject props=null; 
     private Boolean multiple=true;
 
-    @Override
-    public void initialize(CordovaInterface cordova,CordovaWebView webview){
-        FileExplorer.context=cordova.getContext();
-        FileExplorer.resources=FileExplorer.context.getResources();
-        FileExplorer.packagename=FileExplorer.context.getPackageName();
-    }
     @Override
     public boolean execute(String action,JSONArray args,CallbackContext callbackContext) throws JSONException {
         if(action.equals("pick")){
@@ -158,7 +150,7 @@ public class FileExplorer extends CordovaPlugin {
             if(path!=null){
                 final Intent intent=new Intent(Intent.ACTION_VIEW);
                 final File file=new File(parsePath(path));
-                final Uri uri=FileProvider.getUriForFile(context,packagename+".provider",file);
+                final Uri uri=FileProvider.getUriForFile(context,packageName+".provider",file);
                 intent.setData(uri);
                 final Activity activity=cordova.getActivity();
                 if(intent.resolveActivity(activity.getPackageManager())==null){
@@ -285,6 +277,6 @@ public class FileExplorer extends CordovaPlugin {
     }
 
     static protected int getResourceId(String type,String name){
-        return resources.getIdentifier(name,type,FileExplorer.packagename);
+        return resources.getIdentifier(name,type,FileExplorer.packageName);
     }
 }

@@ -48,10 +48,6 @@
         </config-file>
         <source-file src="src/ios/MimeTyper.swift"/>
         <source-file src="src/ios/FileExplorer.swift"/>
-        <dependency 
-            id="vritra-plugin-swift-support"
-            url="https://github.com/AhmedAyachi/vritra-plugin-swift-support"
-        />
     </platform>
 
     <platform name="browser">
@@ -59,4 +55,9 @@
             <clobbers target="FileExplorer"/>
         </js-module>
     </platform>
+
+    <dependency 
+        id="vritra-plugin-common"
+        url="https://github.com/AhmedAyachi/vritra-plugin-common"
+    />
 </plugin>
