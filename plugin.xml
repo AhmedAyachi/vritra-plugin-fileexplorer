@@ -26,7 +26,7 @@
                     android:name="android.support.FILE_PROVIDER_PATHS"
                     android:resource="@xml/fileexplorer_provider_paths"
                 />
-           </provider>
+            </provider>
         </config-file>
         <source-file src="src/android/FileExplorer.java" target-dir="src/com/vritra/FileExplorer"/>
         <source-file src="src/android/FileFinder.java" target-dir="src/com/vritra/FileExplorer"/>
@@ -36,6 +36,13 @@
             <uses-permission android:name="android.permission.READ_MEDIA_VIDEO"/>
             <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"/>
             <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+            <queries>
+                <intent>
+                    <action android:name="android.intent.action.VIEW"/>
+                    <category android:name="android.intent.category.BROWSABLE"/>
+                    <data android:scheme="https"/>
+                </intent>
+            </queries>
         </config-file>
     </platform>
     
