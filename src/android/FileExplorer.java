@@ -155,7 +155,6 @@ public class FileExplorer extends VritraPlugin {
                 final Activity activity=cordova.getActivity();
                 if(intent.resolveActivity(activity.getPackageManager())==null){
                     throw new Exception("No app to open file");
-                    //Toast.makeText(context,"No app to open file",Toast.LENGTH_SHORT).show();
                 }
                 else{
                     intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION|Intent.FLAG_GRANT_WRITE_URI_PERMISSION);

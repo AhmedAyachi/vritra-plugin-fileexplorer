@@ -45,14 +45,14 @@ interface FileExplorer {
     * @example
     * path:".jpeg" => type:"image/jpeg"
     */
-    useFileType(path:String,callback:(type:String)=>void):void;
+    useFileType(path:string,callback:(type:string)=>void):void;
     /**
     * Opens a local file in the system default app.
     * @notice This method may fail on simulators
     */
     open(options:{
-        path:String,
-        onFail(message:String):void,
+        path:string,
+        onFail(message:string):void,
     }):void;
     /**
     * Plays the specified local audio file path on background.
@@ -62,8 +62,8 @@ interface FileExplorer {
         /**
         * AudioPlayer id, used to stop audio. 
         */
-        id:String,
-        path:String,
+        id:string,
+        path:string,
         /**
         * A fraction used to specify from which start point should play the audio.
         * @example 
@@ -71,22 +71,22 @@ interface FileExplorer {
         * 0.5 => from the middle
         * @default 0
         */
-        atRatio:Number,
+        atRatio:number,
         onPlay(options:{
             /**
             * The audio file duration in ms 
             */
-            duration:Number,
+            duration:number,
         }):void,
-        onFail(message:String):void,
+        onFail(message:string):void,
     }):void,
     stopAudio(options:{
-        id:String,
+        id:string,
         onStop(options:{
             /**
             * The audio file stop position in ms 
             */
-            timestamp:Number, 
+            timestamp:number, 
         }):void,
     }):void,
 }
@@ -95,22 +95,22 @@ interface FileExplorerEntry {
     /**
     * File name with extension 
     */
-    name:String,
+    name:string,
     /**
     * File's absolute path 
     */
-    path:String,
+    path:string,
     /**
     * File's parent directory absolute path
     */
-    location:String,
+    location:string,
     /**
     * File's path property with file:/// as a prefix
     */
-    fullpath:String,
-    lastModified:Number,
+    fullpath:string,
+    lastModified:number,
     /**
     * File size in bytes 
     */
-    size:Number,
+    size:number,
 }
