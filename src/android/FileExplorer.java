@@ -22,7 +22,6 @@ import android.app.Activity;
 import androidx.core.content.FileProvider;
 import android.media.MediaPlayer;
 import android.media.AudioManager;
-import android.widget.Toast;
 import android.os.Build;
 import android.net.Uri;
 
@@ -76,8 +75,8 @@ public class FileExplorer extends VritraPlugin {
             this.openFilePicker(ref);
         }
         else{
-            callbacks.remove(Integer.toString(ref));
-            Toast.makeText(context,"FileExplorer Permission Denied",Toast.LENGTH_SHORT).show();
+            final CallbackContext callback=(CallbackContext)callbacks.remove(Integer.toString(ref));
+            callback.error(new VritraError("FileExplorer Permission Denied"));
         }
     };
     public void openFilePicker(int ref){
@@ -99,8 +98,8 @@ public class FileExplorer extends VritraPlugin {
         final CallbackContext callback=(CallbackContext)callbacks.opt(key);
         if(callback!=null){
             callbacks.remove(key);
-            if((resultCode==cordova.getActivity().RESULT_OK)&&(intent!=null)){
-                try{
+            try{
+                if((resultCode==cordova.getActivity().RESULT_OK)&&(intent!=null)){
                     if(multiple){
                         final ClipData data=intent.getClipData();
                         final JSONArray entries=new JSONArray();
@@ -131,11 +130,11 @@ public class FileExplorer extends VritraPlugin {
                         callback.success(props);
                     }
                 }
-                catch(Exception exception){
-                    Toast.makeText(context,"exception:"+exception.getMessage(),Toast.LENGTH_SHORT).show();
-                }
+                else throw new Exception("failed to get activity result");
             }
-            callback.error("");
+            catch(Exception exception){
+                callback.error(new VritraError(exception));
+            }
         }
     }
 
@@ -153,20 +152,16 @@ public class FileExplorer extends VritraPlugin {
                 final Uri uri=FileProvider.getUriForFile(context,packageName+".provider",file);
                 intent.setData(uri);
                 final Activity activity=cordova.getActivity();
-                if(intent.resolveActivity(activity.getPackageManager())==null){
-                    throw new Exception("No app to open file");
-                }
-                else{
+                if(intent.resolveActivity(activity.getPackageManager())!=null){
                     intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION|Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
                     activity.startActivity(intent);
                 }
+                else throw new Exception("No app to open file");
             }
-            else{
-                throw new Exception("Path property is falsy");
-            }
+            else throw new Exception("Path property is falsy");
         }
         catch(Exception exception){
-            callback.error(exception.getMessage());
+            callback.error(new VritraError(exception));
         }
     }
 
@@ -191,16 +186,12 @@ public class FileExplorer extends VritraPlugin {
                     params.put("duration",duration);
                     callback.success(params);
                 }
-                else{
-                    throw new Exception("Path property is required");
-                }
+                else throw new Exception("Path property is required");
             }
-            else{
-                throw new Exception("Id property is required");
-            }
+            else throw new Exception("Id property is required");
         }
         catch(Exception exception){
-            callback.error(exception.getMessage());
+            callback.error(new VritraError(exception));
         }
     }
 
@@ -218,12 +209,10 @@ public class FileExplorer extends VritraPlugin {
                     callback.success(params);
                 }
             }
-            else{
-                throw new Exception("Id property is required");
-            }
+            else throw new Exception("Id property is required");
         }
         catch(Exception exception){
-            callback.error(exception.getMessage());
+            callback.error(new VritraError(exception));
         }
     }
 
@@ -254,9 +243,9 @@ public class FileExplorer extends VritraPlugin {
             if(Build.VERSION.SDK_INT<=Build.VERSION_CODES.R){
                 message+="Please try selecting it from another location";
             }
-            Toast.makeText(context,message,Toast.LENGTH_SHORT).show();
+            throw new Exception(message);
         }
-        return props;
+        else return props;
     }
 
 

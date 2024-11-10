@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <plugin 
-    id="vritra-plugin-fileexplorer" version="1.0.4" 
+    id="vritra-plugin-fileexplorer" version="1.0.6" 
     xmlns="http://apache.org/cordova/ns/plugins/1.0" 
     xmlns:android="http://schemas.android.com/apk/res/android"
 >
@@ -29,7 +29,6 @@
             </provider>
         </config-file>
         <source-file src="src/android/FileExplorer.java" target-dir="src/com/vritra/FileExplorer"/>
-        <source-file src="src/android/FileFinder.java" target-dir="src/com/vritra/FileExplorer"/>
         <source-file src="src/android/fileexplorer_provider_paths.xml" target-dir="res/xml"/>
         <config-file target="AndroidManifest.xml" parent=".">
             <uses-permission android:name="android.permission.READ_MEDIA_AUDIO"/>

@@ -52,7 +52,7 @@ interface FileExplorer {
     */
     open(options:{
         path:string,
-        onFail(message:string):void,
+        onFail(error:Error):void,
     }):void;
     /**
     * Plays the specified local audio file path on background.
@@ -78,7 +78,7 @@ interface FileExplorer {
             */
             duration:number,
         }):void,
-        onFail(message:string):void,
+        onFail(error:Error):void,
     }):void,
     stopAudio(options:{
         id:string,
