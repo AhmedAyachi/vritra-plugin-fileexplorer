@@ -7,6 +7,7 @@ import org.json.JSONObject;
 import org.json.JSONException;
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.Random;
 import java.net.URLConnection;
 import android.content.Context;
@@ -46,6 +47,11 @@ public class FileExplorer extends VritraPlugin {
             this.useFileType(path,callbackContext);
             return true;
         }
+        else if(action.equals("canOpenFile")){
+            String path=args.getString(0);
+            this.canOpenFile(path,callbackContext);
+            return true;
+        } 
         else if(action.equals("open")){
             JSONObject props=args.getJSONObject(0);
             this.open(props,callbackContext);
@@ -143,18 +149,32 @@ public class FileExplorer extends VritraPlugin {
         callback.success(type);
     }
 
+    private Intent canOpenFile(String path,CallbackContext callback){
+        try{
+            final Intent intent=new Intent(Intent.ACTION_VIEW);
+            final File file=new File(parsePath(path));
+            final Uri uri=FileProvider.getUriForFile(context,packageName+".provider",file);
+            intent.setData(uri);
+            final Activity activity=cordova.getActivity();
+            final JSONObject result=new JSONObject();
+            result.put("isOpenable",intent.resolveActivity(activity.getPackageManager())!=null);
+            if(callback!=null) callback.success(result);
+            return intent;
+        }
+        catch(Exception exception){
+            if(callback!=null) callback.error(new VritraError(exception));
+            return null;
+        }
+    }
+
     private void open(JSONObject props,CallbackContext callback){
         final String path=props.optString("path",null);
         try{
             if(path!=null){
-                final Intent intent=new Intent(Intent.ACTION_VIEW);
-                final File file=new File(parsePath(path));
-                final Uri uri=FileProvider.getUriForFile(context,packageName+".provider",file);
-                intent.setData(uri);
-                final Activity activity=cordova.getActivity();
-                if(intent.resolveActivity(activity.getPackageManager())!=null){
+                final Intent intent=this.canOpenFile(path,null);
+                if(intent!=null){
                     intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION|Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-                    activity.startActivity(intent);
+                    cordova.getActivity().startActivity(intent);
                 }
                 else throw new Exception("No app to open file");
             }

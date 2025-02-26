@@ -91,22 +91,33 @@ class FileExplorer:VritraPlugin,UIDocumentPickerDelegate,UIDocumentInteractionCo
     func picker(_ pickerVC:PHPickerViewController,didFinishPicking medias:[PHPickerResult]){
         if(!medias.isEmpty){
             var i=0;
-            let manager=FileManager.default;
+            let fileManager=FileManager.default;
             medias.forEach({media in
                 let provider=media.itemProvider;
                 provider.loadFileRepresentation(forTypeIdentifier:UTType.item.identifier,completionHandler:{[self] url,error in
                     i+=1;
-                    if let url=url {
-                        let path="\(manager.temporaryDirectory.path)/\(url.lastPathComponent)";
-                        let destination=URL(fileURLWithPath:path);
-                        if((manager.fileExists(atPath:destination.path)&&((try? manager.replaceItemAt(destination,withItemAt:url) != nil) != nil))||((try? manager.moveItem(at:url,to:destination)) != nil)
-                        ){
-                            let entry=FileExplorer.getEntryFromURL(destination);
-                            self.entries.append(entry);
+                    guard let url=url else { return };
+                    let path="\(fileManager.temporaryDirectory.path)/\(url.lastPathComponent)";
+                    let destination=URL(fileURLWithPath:path);
+                    var fileCreated:Bool=false;
+                    do {
+                        if(fileManager.fileExists(atPath:destination.path)){
+                            _=try fileManager.replaceItemAt(destination,withItemAt:url);
                         }
-                        if(i==medias.count){
-                            self.onPick();
+                        else {
+                            try fileManager.moveItem(at:url,to:destination);
                         }
+                        fileCreated=true;
+                    }
+                    catch {
+                        fileCreated=false;
+                    }
+                    if(fileCreated){
+                        let entry=FileExplorer.getEntryFromURL(destination);
+                        self.entries.append(entry);
+                    }
+                    if(i==medias.count){
+                        self.onPick();
                     }
                 });
             });
@@ -159,42 +170,61 @@ class FileExplorer:VritraPlugin,UIDocumentPickerDelegate,UIDocumentInteractionCo
         }
     }
 
+    @objc(canOpenFile:)
+    func canOpenFile(command:CDVInvokedUrlCommand){
+        guard var path=command.arguments[0] as? String else { return };
+        if(path.hasPrefix("file:")){
+            path=path.replacingOccurrences(of:"file:",with:"");
+        }
+        while(path.contains("//")){
+            path=path.replacingOccurrences(of:"//",with:"/");
+        }
+        if(FileManager.default.fileExists(atPath:path)){
+            let url=URL(fileURLWithPath:path);
+            self.success(command,["isOpenable":UIApplication.shared.canOpenURL(url)]);
+        }
+        else {
+            self.error(command,FileExplorer.Error("file does not exist").toObject());
+        }
+    }
+    
     @objc(open:)
     func open(command:CDVInvokedUrlCommand){
         DispatchQueue.main.async(execute:{[self] in
-            if let props=command.arguments[0] as? [AnyHashable:Any],
-                var path=props["path"] as? String {
-                if(path.hasPrefix("file:")){
-                    path=path.replacingOccurrences(of:"file:",with:"");
-                }
-                while(path.contains("//")){
-                    path=path.replacingOccurrences(of:"//",with:"/");
-                }
-                let url=URL(fileURLWithPath:path);
-                do{
-                    if(FileManager.default.fileExists(atPath:url.path)){
-                        _=url.startAccessingSecurityScopedResource()
-                        self.previewurl=url;
-                        let opener=UIDocumentInteractionController(url:url);
-                        opener.delegate=self;
-                        if(!opener.presentPreview(animated:true)){
-                            url.stopAccessingSecurityScopedResource();
-                            self.previewurl=nil;
-                            throw FileExplorer.Error("Can't open \(url.lastPathComponent)");
-                        }
-                    }
-                    else{
+            guard
+                let props=command.arguments[0] as? [AnyHashable:Any],
+                var path=props["path"] as? String
+            else { return };
+            if(path.hasPrefix("file:")){
+                path=path.replacingOccurrences(of:"file:",with:"");
+            }
+            while(path.contains("//")){
+                path=path.replacingOccurrences(of:"//",with:"/");
+            }
+            let url=URL(fileURLWithPath:path);
+            do{
+                if(FileManager.default.fileExists(atPath:url.path)){
+                    _=url.startAccessingSecurityScopedResource()
+                    self.previewurl=url;
+                    let opener=UIDocumentInteractionController(url:url);
+                    opener.delegate=self;
+                    if(!opener.presentPreview(animated:true)){
+                        url.stopAccessingSecurityScopedResource();
+                        self.previewurl=nil;
                         throw FileExplorer.Error("Can't open \(url.lastPathComponent)");
                     }
                 }
-                catch{
-                    let alert=UIAlertController(title:"",message:error.localizedDescription,preferredStyle:.actionSheet);
-                    DispatchQueue.main.asyncAfter(deadline:DispatchTime.now()+2){
-                        alert.dismiss(animated:true);
-                    }
-                    self.viewController.present(alert,animated:true);
-                    self.error(command,"Can't open url");
+                else{
+                    throw FileExplorer.Error("Can't open \(url.lastPathComponent)");
                 }
+            }
+            catch{
+                let alert=UIAlertController(title:"",message:error.localizedDescription,preferredStyle:.actionSheet);
+                DispatchQueue.main.asyncAfter(deadline:DispatchTime.now()+2){
+                    alert.dismiss(animated:true);
+                }
+                self.viewController.present(alert,animated:true);
+                self.error(command,"Can't open url");
             }
         });
     }

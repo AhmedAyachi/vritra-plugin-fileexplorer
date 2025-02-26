@@ -9,6 +9,9 @@ module.exports={
     useFileType:(path,callback)=>{
         exec(callback,null,"FileExplorer","useFileType",[path]);
     },
+    canOpenFile:(path,callback)=>{
+        exec(callback,null,"FileExplorer","canOpenFile",[path]);
+    },
     open:(props)=>{
         const {onFail}=props;
         exec(null,onFail,"FileExplorer","open",[props]);

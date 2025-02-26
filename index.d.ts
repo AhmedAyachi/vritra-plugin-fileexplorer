@@ -47,6 +47,17 @@ interface FileExplorer {
     */
     useFileType(path:string,callback:(type:string)=>void):void;
     /**
+     * Checks if the device can open a file
+     * @param path 
+     * @param callback 
+     * @param fallback 
+     */
+    canOpenFile(
+        path:string,
+        callback:(result:{isOpenable:boolean})=>void,
+        fallback:(error:Error)=>void,
+    ):void;
+    /**
     * Opens a local file in the system default app.
     * @notice This method may fail on simulators
     */
